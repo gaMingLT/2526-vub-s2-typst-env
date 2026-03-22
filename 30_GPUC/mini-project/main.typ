@@ -86,7 +86,7 @@ The final part will compare the local vs global memory location, as indicated in
 
 = Methodology
 
-*TODO*
+For each iteration of the combination of values to be measures, *15* runs where measured. The first 5 runs where discarded to allow the system to stabilize. This is in accordance to the recommendations in @number_of_runs. For each measured value, is applicable a Cov range chart is produced and will be reference, these can be found in @appendix. The acceptable range of the Cov is taken from @paae_cov_range.
 
 
 #pagebreak()
@@ -129,9 +129,55 @@ The final part will compare the local vs global memory location, as indicated in
 
 
 
+#pagebreak()
 = Part 2: Elements Per Thread
 
+== Setup
 
+The array size is fixed for all benchmark variations performed in this part to $2^20$.
+
+== Memory Bandwidth
+
+
+#figure(
+  image(
+    "images/part-2/desktop/part_2_memory_vs_ept.pdf",
+  ),
+  caption: [],
+) <part-2-memory-bandwidth-vs-ept>
+
+
+#figure(
+  image(
+    "images/part-2/desktop/part_2_memory_bandwidth_ci.pdf",
+  ),
+  caption: [],
+) <part-2-memory-bandwidth-vs-ept-ci>
+
+
+
+
+== Time
+
+#figure(
+  image(
+    "images/part-2/desktop/part_2_time_vs_ept.pdf",
+  ),
+  caption: [],
+) <part-2-time-vs-ept>
+
+
+#figure(
+  image(
+    "images/part-2/desktop/part_2_time_ci.pdf",
+  ),
+  caption: [],
+) <part-2-time-ci>
+
+
+
+
+#pagebreak()
 = Part 3: Roofline Model
 
 
@@ -162,6 +208,25 @@ The final part will compare the local vs global memory location, as indicated in
   ),
   caption: [],
 ) <part-1-compute-troughput-cov>
+
+
+== Part 2
+
+#figure(
+  image(
+    "images/part-2/desktop/part_2_memory_vs_ept_cov.pdf",
+  ),
+  caption: [],
+) <part-2-memory-vs-ept-cov>
+
+
+#figure(
+  image(
+    "images/part-2/desktop/part_2_time_vs_ept_cov.pdf",
+  ),
+  caption: [],
+) <part-2-time-vs-ept-cov>
+
 
 
 == Specifications
