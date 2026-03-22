@@ -86,7 +86,7 @@ The final part will compare the local vs global memory location, as indicated in
 
 = Methodology
 
-For each iteration of the combination of values to be measures, *15* runs where measured. The first 5 runs where discarded to allow the system to stabilize. This is in accordance to the recommendations in @number_of_runs. For each measured value, is applicable a Cov range chart is produced and will be reference, these can be found in @appendix. The acceptable range of the Cov is taken from @paae_cov_range.
+For each iteration of the combination of values to be measures, *20* runs where measured. The first 5 runs where discarded to allow the system to stabilize. This is in accordance to the recommendations in @number_of_runs. For each measured value, is applicable a Cov range chart is produced and will be reference, these can be found in @appendix. The acceptable range of the Cov is taken from @paae_cov_range.
 
 
 #pagebreak()
@@ -134,7 +134,8 @@ For each iteration of the combination of values to be measures, *15* runs where 
 
 == Setup
 
-The array size is fixed for all benchmark variations performed in this part to $2^20$.
+// TODO: Update based on benchmarking results: $2^23$!
+The array size is fixed for all benchmark variations performed in this part to $2^22$, based on the data gathered in part 1.
 
 == Memory Bandwidth
 
