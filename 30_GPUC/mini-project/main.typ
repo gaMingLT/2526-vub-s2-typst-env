@@ -86,7 +86,7 @@ The final part will compare the local vs global memory location, as indicated in
 
 = Methodology
 
-For each iteration of the combination of values to be measures, *20* runs where measured. The first 5 runs where discarded to allow the system to stabilize. This is in accordance to the recommendations in @number_of_runs. For each measured value, is applicable a Cov range chart is produced and will be reference, these can be found in @appendix. The acceptable range of the Cov is taken from @paae_cov_range.
+For each iteration of the combination of values to be measures, *20* runs where measured. The first 5 runs where discarded to allow the system to stabilize. This is in accordance to the recommendations in @number_of_runs. For each measured value, if applicable a Cov range chart is produced and will be reference, these can be found in @appendix. The acceptable range of the Cov is taken from @paae_cov_range.
 
 
 #pagebreak()
@@ -134,8 +134,9 @@ For each iteration of the combination of values to be measures, *20* runs where 
 
 == Setup
 
-// TODO: Update based on benchmarking results: $2^23$!
-The array size is fixed for all benchmark variations performed in this part to $2^22$, based on the data gathered in part 1.
+// Workgroup size = 64
+// And more ...
+The array size is fixed for all benchmark variations performed in this part to $2^22$, based on the data gathered in part 1 and the workgroup size is set to $64$.
 
 == Memory Bandwidth
 
@@ -182,9 +183,38 @@ The array size is fixed for all benchmark variations performed in this part to $
 = Part 3: Roofline Model
 
 
+== Setup
+
+// Workgroup size = 64
+// and more...
+The array size is fixed for all benchmark variations performed in this part to $2^22$, based on the data gathered in part 1 and the workgroup size is set to $64$.
+
+
+== Model
+
+#figure(
+  image(
+    "images/part-3/desktop/part_3_roofline_model.pdf",
+  ),
+  caption: [],
+) <part-3-model>
+
+
+#figure(
+  image(
+    "images/part-3/desktop/part_3_gflops_vs_loop_count_ci.pdf",
+  ),
+  caption: [],
+) <part-3-glops-vs-loop-count-ci>
+
+
+
+#pagebreak()
 = Part 4: Local vs Global
 
 
+
+#pagebreak()
 = Extra: Desktop vs Macbook
 
 
@@ -229,6 +259,15 @@ The array size is fixed for all benchmark variations performed in this part to $
 ) <part-2-time-vs-ept-cov>
 
 
+== Part 3
+
+#figure(
+  image(
+    "images/part-3/desktop/part_3_gflops_cov.pdf",
+  ),
+  caption: [],
+) <part-2-gflops-cov>
+
 
 == Specifications
 
@@ -255,13 +294,11 @@ The array size is fixed for all benchmark variations performed in this part to $
     [*Part*], [*Value*],
     [CPU], [Ryzen 9 5950X],
     [GPU], [RTX 3070],
-    // TODO: Update this value
-    [OpenCL], [*TODO*],
-    // TODO: Update this value
-    [Driver Version], [*TODO*],
+    [OpenCL], [300 (Set in code)],
+    [Driver Version], [591.59],
     [RAM], [64GB (3200 Mhz)],
     [OS],
-    [Windows Version	10.0.22631 Build 22631
+    [Windows 11 - Version	10.0.22631 Build 22631
     ],
   ),
   caption: [Desktop Specifications],
