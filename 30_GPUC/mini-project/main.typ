@@ -86,7 +86,7 @@ The final part will compare the local vs global memory location, as indicated in
 
 = Methodology
 
-For each iteration of the combination of values to be measures, *20* runs where measured. The first 5 runs where discarded to allow the system to stabilize. This is in accordance to the recommendations in @number_of_runs. For each measured value, if applicable a Cov range chart is produced and will be reference, these can be found in @appendix. The acceptable range of the Cov is taken from @paae_cov_range.
+For each iteration of the combination of values to be measures, *20* runs where measured. The first 5 runs where discarded to allow the system to stabilize. This is in accordance to the recommendations in @number_of_runs. For each measured value, if applicable a Cov range chart is produced and will be reference, these can be found in @appendix. The acceptable range of the Cov is taken from @paae_cov_range. The Cov charts for each part, can be found in the appendix section @appendix.
 
 
 #pagebreak()
@@ -98,6 +98,9 @@ In this part, a comparison between the addition & multiplication operation on gp
 
 The code for this part can be found in the file: `part-1.cpp` and the kernel file in `partOne.cl`.
 
+== Code
+
+// TODO: More here
 
 == GPU Analysis
 
@@ -169,7 +172,9 @@ From the conduced benchmarks and resulting graphs, it can be concluded that ther
 
 
 
-#pagebreak()
+// #pagebreak()
+
+#colbreak()
 = Part 2: Elements Per Thread
 
 This section will analyze the result of increasing the number of elements a single thread (kernel item) is responsible for on the performance of the execution. These different access patterns are described as `continuous` & `strided`. They are based on the pdf #footnote[http://parallel.vub.ac.be/education/gpu/theory/GPU%20Computing%20-%20Lesson%202%20doc%20-%20Programming%20GPUs%20-%20levels%200%201%20and%202.pdf] mentioned in the assignment description.
@@ -179,6 +184,11 @@ This section will analyze the result of increasing the number of elements a sing
 // Workgroup size = 64
 // And more ...
 The array size is fixed for all benchmark variations performed in this part to $2^22$, based on the data gathered in part 1 and the workgroup size is set to $64$.
+
+// TODO: More here
+
+
+== Code
 
 // TODO: More here
 
@@ -225,17 +235,22 @@ Let's continue to take a look at the compute intensity of both strategies, as sh
   caption: [],
 ) <part-2-compute-ci>
 
-Here the picture becomes much clearer again, at the same time that the memory bandwidth takes a sharp drop, the compute throughput does to.
+Here the picture becomes much clearer again, at the same time that the memory bandwidth takes a sharp drop, the compute throughput does to. The drop for the continuous pattern arrives at the same time, and for the strided pattern also.
 
+But comparing the add vs mul operation, the drop for the mul operation appears to be delayed by one EPT value increase.
 
 
 == Conclusion
 
+Combining all the information from the charts above, it can be concluded that the `strided` pattern gives the GPU the data it needs to perform the computations, up until the elements per thread become to large again and the gpu is unable to saturate the bandwidth and give the gpu the data it needs to compute.
+
+Apart from the performance that can be noticed from the data, is the fact that the CI interval of the continuous are much tighter than those of the strided pattern. No immediate answer can be given for this difference in intervals between access patterns.
 
 
 
 
-#pagebreak()
+// #pagebreak()
+#colbreak()
 = Part 3: Roofline Model
 
 
@@ -245,33 +260,84 @@ Here the picture becomes much clearer again, at the same time that the memory ba
 // and more...
 The array size is fixed for all benchmark variations performed in this part to $2^22$, based on the data gathered in part 1 and the workgroup size is set to $64$.
 
+// TODO: More here
 
-== Model
+== Code
 
-// #figure(
-//   image(
-//     "images/part-3/desktop/part_3_roofline_model.pdf",
-//   ),
-//   caption: [],
-// ) <part-3-model>
+// TODO: More here
 
 
-// #figure(
-//   image(
-//     "images/part-3/desktop/part_3_gflops_vs_loop_count_ci.pdf",
-//   ),
-//   caption: [],
-// ) <part-3-glops-vs-loop-count-ci>
+== Analysis
 
+Let's start with some charts, depicting the loop count for the compute intensity, memory bandwidth and runtime as show in @part-3-all-vs-loop-count.
+
+#figure(
+  image(
+    "images/part-3/desktop/part_3_memory_and_flops_vs_loop_count.pdf",
+  ),
+  caption: [],
+) <part-3-all-vs-loop-count>
+
+The plots on the graphs do not indicated out of the ordinary, increasing the loop count increases the runtime of the execution. The behavior between the compute intensity (left) and memory bandwidth (middle) is interesting and warrants further discussion, as designed by the experiment.
+
+Before analyzing the roofline model, let's compare the compute intensity for the different loop count values in function of the elements per thread, in figure @part-3-flops-loop-count-ci.
+
+#figure(
+  image(
+    "images/part-3/desktop/part_3_gflops_vs_loop_count_ci.pdf",
+  ),
+  caption: [],
+) <part-3-flops-loop-count-ci>
+
+
+A similar graph can be made for the bandwidth in function of the loop count and different EPT values, in @part-3-bandwidth-loop-count-ci.
+
+#figure(
+  image(
+    "images/part-3/desktop/part_3_bandwidth_vs_loop_count_ci.pdf",
+  ),
+  caption: [],
+) <part-3-bandwidth-loop-count-ci>
+
+The same behavior as seen in graphs in figure @part-3-all-vs-loop-count, is again visible in the above two graphs, for different loop counts. The EPT value 'only' determines the ranges of the values, but does not change the chart behavior.
+
+Plotting the arithmetic intensity, in function of the loop count as shown in @part-3-ai-vs-loop-count-ci.
+
+#figure(
+  image(
+    "images/part-3/desktop/part_3_ai_vs_loop_count_ci.pdf",
+  ),
+  caption: [],
+) <part-3-ai-vs-loop-count-ci>
+
+The model, as seen in the lectures, which summaries all the plots and behavior's described is the roofline model, as shown in @part-3-model.
+
+#figure(
+  image(
+    "images/part-3/desktop/part_3_roofline_model.pdf",
+  ),
+  caption: [],
+) <part-3-model>
+
+For the GPU in question, the memory bandwidth & peak computational throughput is indicated. The results follow the memory sloop from the starting loop count (LC) $8$ until $64$, were it starts diverging. The 'ridge point' at which the actual data start becoming 'memory bound' occurs much earlier than the theoretical value.
+
+// TODO: More
+
+
+== Conclusion
+
+The experiment in question, has clearly shown the appearance of the roofline model in the data, this part of the experiment can be considered a success. With small note made for the practical ridge point not matching the expected theoretical point.
 
 
 #pagebreak()
 = Part 4: Local vs Global
 
 
+== Setup
 
-#pagebreak()
-= Extra: Desktop vs Macbook
+
+// #pagebreak()
+// = Extra: Desktop vs Macbook
 
 
 
@@ -302,6 +368,24 @@ The array size is fixed for all benchmark variations performed in this part to $
 
 == Part 3
 
+#figure(
+  image(
+    "images/part-3/desktop/part_3_time_cov.pdf",
+  ),
+  caption: [],
+) <part-3-time-covs>
+
+
+
+== GPU Microbenchmark
+
+// #figure(
+//   image(
+//     "images/part-3/desktop/part_3_time_cov.pdf",
+//   ),
+//   caption: [],
+// ) <part-3-time-covs>
+
 
 == Specifications
 
@@ -312,6 +396,7 @@ The array size is fixed for all benchmark variations performed in this part to $
     columns: (1fr, 1fr),
     [*Part*], [*Value*],
     [CPU], [M2 Pro (6 performance and 4 efficiency)],
+    [OpenCL], [1.2],
     [RAM], [16GB],
     // TODO: Update this value
     [OS], [*TODO*],
