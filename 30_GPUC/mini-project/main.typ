@@ -379,12 +379,21 @@ The experiment in question, has clearly shown the appearance of the roofline mod
 
 == GPU Microbenchmark
 
-// #figure(
-//   image(
-//     "images/part-3/desktop/part_3_time_cov.pdf",
-//   ),
-//   caption: [],
-// ) <part-3-time-covs>
+=== Desktop
+
+#figure(
+  image(
+    "images/microbench/microbenchmark-1.png",
+  ),
+  caption: [Desktop - Microbenchmark Results 1],
+) <desktop-microbenchmark-1>
+
+#figure(
+  image(
+    "images/microbench/microbenchmark-2.png",
+  ),
+  caption: [Desktop - Microbenchmark Results 2],
+) <desktop-microbenchmark-2>
 
 
 == Specifications
