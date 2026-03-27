@@ -454,22 +454,6 @@ This section will discuss the usage of local memory before performing operations
 
 == Specifications
 
-=== Macbook
-
-#figure(
-  table(
-    columns: (1fr, 1fr),
-    [*Part*], [*Value*],
-    [CPU], [M2 Pro (6 performance and 4 efficiency)],
-    [OpenCL], [1.2],
-    [RAM], [16GB],
-    // TODO: Update this value
-    [OS], [*TODO*],
-  ),
-  caption: [Macbook Specifications],
-) <macbook>
-
-
 === Desktop
 
 #figure(
@@ -487,6 +471,23 @@ This section will discuss the usage of local memory before performing operations
   ),
   caption: [Desktop Specifications],
 ) <desktop>
+
+
+=== Macbook
+
+#figure(
+  table(
+    columns: (1fr, 1fr),
+    [*Part*], [*Value*],
+    [CPU], [M2 Pro (6 performance and 4 efficiency)],
+    [OpenCL], [1.2],
+    [RAM], [16GB],
+    // TODO: Update this value
+    [OS], [*TODO*],
+  ),
+  caption: [Macbook Specifications],
+) <macbook>
+
 
 
 == Charts
