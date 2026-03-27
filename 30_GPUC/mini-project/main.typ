@@ -173,7 +173,7 @@ From the conduced benchmarks and resulting graphs, it can be concluded that ther
 
 // #pagebreak()
 
-// #colbreak()
+#colbreak()
 = Part 2: Elements Per Thread
 
 This section will analyze the result of increasing the number of elements a single thread (kernel item) is responsible for on the performance of the execution. These different access patterns are described as `continuous` & `strided`. They are based on the pdf #footnote[http://parallel.vub.ac.be/education/gpu/theory/GPU%20Computing%20-%20Lesson%202%20doc%20-%20Programming%20GPUs%20-%20levels%200%201%20and%202.pdf] mentioned in the assignment description.
@@ -292,7 +292,7 @@ Apart from the performance that can be noticed from the data, is the fact that t
 
 
 // #pagebreak()
-// #colbreak()
+#colbreak()
 = Part 3: Roofline Model
 
 This section will discuss the experiment to create a roofline model as described in the assignment & discussed in the lectures. Before showcasing the roofline model, several other charts will be discussed first, showcasing the utility of the roofline model chart.
@@ -357,12 +357,36 @@ The model, as seen in the lectures, which summaries all the plots and behavior's
 
 For the GPU in question, the memory bandwidth & peak computational throughput is indicated. The results follow the memory sloop from the starting loop count (LC) $8$ until $64$, were it starts diverging. The 'ridge point' at which the actual data start becoming 'memory bound' occurs much earlier than the theoretical value.
 
-// TODO: More
-
 
 == Conclusion
 
 The experiment in question, has clearly shown the appearance of the roofline model in the data, this part of the experiment can be considered a success. With small note made for the practical ridge point not matching the expected theoretical point.
+
+
+#colbreak()
+= Part 3.2: Workgroup Size
+
+This section will quickly discuss the impact of the workgroup-size on the performance of the CI kernel, in part 3.
+
+Let's start of with charting the time in function of the workgroup size, across the LC & EPT values, using a ridgeline #footnote[https://www.data-to-viz.com/graph/ridgeline.html] visualization.
+
+#figure(
+  image(
+    "images/part-3-2/desktop/part3_add_gputimens_ridgeline.pdf",
+  ),
+  caption: [Ridgeline Visualization of the GPU time in function of workgroup-size],
+) <part-3-2-ridgeline-time>
+
+As can be concluded from the figure @part-3-2-ridgeline-time, is that the most optimal range of WGS for the kernel in part 3, is between $32-256$.  This validates the choice to fix the WGS to $64$ across the benchmarks in part 1, 2 & 3.
+
+Completing this section with an additional roofline model chart as illustrated in figure @part-3-2-model. The distribution of the charts for the different workgroup-size values is clearly visible.
+
+#figure(
+  image(
+    "images/part-3-2/desktop/part3_add_roofline_wgz.pdf",
+  ),
+  caption: [],
+) <part-3-2-model>
 
 
 #pagebreak()
@@ -385,13 +409,29 @@ The experiment in question, has clearly shown the appearance of the roofline mod
 
 #figure(
   image(
-    "images/part-1/desktop/part_1_gpu_covs_improved.pdf",
+    "images/part-1/desktop/part_1_gpu_time_ns_cov_cov.pdf",
   ),
   caption: [],
-) <part-1-gpu-covs>
+) <part-1-time-covs>
+
+
+#figure(
+  image(
+    "images/part-1/desktop/part_1_gpu_gbps_cov_cov.pdf",
+  ),
+  caption: [],
+) <part-1-gpbs-covs>
+
+#figure(
+  image(
+    "images/part-1/desktop/part_1_gpu_gflops_cov_cov.pdf",
+  ),
+  caption: [],
+) <part-1-gflops-covs>
 
 
 
+#pagebreak()
 == Part 2
 
 #figure(
@@ -402,6 +442,7 @@ The experiment in question, has clearly shown the appearance of the roofline mod
 ) <part-2-time-covs>
 
 
+#pagebreak()
 == Part 3
 
 #figure(
@@ -410,6 +451,34 @@ The experiment in question, has clearly shown the appearance of the roofline mod
   ),
   caption: [],
 ) <part-3-time-covs>
+
+
+#pagebreak()
+== Part 3-2
+
+#figure(
+  image(
+    "images/part-3-2/desktop/part3_add_time_cov.pdf",
+  ),
+  caption: [],
+) <part-3-2-time-covs>
+
+#figure(
+  image(
+    "images/part-3-2/desktop/part3_add_gbps_cov.pdf",
+  ),
+  caption: [],
+) <part-3-2-gpbs-covs>
+
+#figure(
+  image(
+    "images/part-3-2/desktop/part3_add_gflops_cov.pdf",
+  ),
+  caption: [],
+) <part-3-2-gflops-covs>
+
+
+== Part 4
 
 
 
