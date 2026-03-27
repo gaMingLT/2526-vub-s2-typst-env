@@ -54,6 +54,8 @@
   conference: conference,
   doi: doi,
   copyright: "",
+  // isbn: "",
+  // price: "",
   // Font Size as described by the assignment
   font-size: 12pt,
 )
@@ -70,88 +72,86 @@
 #colbreak()
 = Intro
 
-Throughout all parts of the mini-project, it was chosen to compare two *operations* namely: addition & multiplication. To start, a comparison between the operations will be done, as requested in part 1. Following that, the kernel will be updated to execute on multiple elements simultaneous (one-to-many) mapping.
+The first section involves a direct comparison between addition and multiplication operations to establish a baseline, as specified in assignment descriptions.
 
-For the third part, the compute intensity will be increased by applying a loop count factor over the computations.
+Following the comparison in the first part, the kernels are modified to execute on multiple elements simultaneous in two different one-to-many mapping described in the assignment doc @part_2_doc.
 
-The final part will compare the local vs global memory location, as indicated in the scheme #footnote[http://parallel.vub.ac.be/education/gpu/labs/miniproject_step4_with_local%20memory.jpg] in the assignment.
+For the third section, the compute intensity of the benchmark are parameterized by using a loop count factor. Increasing the compute intensity should surface the limitation of the memory & compute of the gpu.
 
-// TODO: Add thing about macbook vs desktop?
+The final section will compare the trade-offs between local vs global memory on the performance of the execution, as indicated in the schema @part_4_scheme  in the assignment.
 
 
 = Structure
 
-In the zip file, inside of the `src`, there is a `project-desktop` folder, containing the `c++` files which execute the kernel benchmarks. For each part, there is a separate `c++` file. The kernel files for each part, are located in the root `src` folder. The following list of kernels should be present in the root folder: `partOne`, `partTwo`, `partThree`, `partFour`.
-
-
+Included in the zip file is a `src` folder. This folder contains a `project-desktop` folder, the kernel files and the CMake project file. The `src` folder contains all the `c++` files responsible for orchestrating the benchmark execution. The following list of kernels are included: `partOne`, `partTwo`, `partThree`, `partThree-2` `partFour`.
 
 
 = Methodology
 
-For each combination of values to be measures, *20* runs where measured. The first 5 runs where discarded to allow the system to stabilize. This is in accordance to the recommendations in @number_of_runs. For each measured value, if applicable a Cov range chart is produced and will be reference, these can be found in @appendix. The acceptable range of the Cov is taken from @paae_cov_range. The Cov charts for each part, can be found in the appendix section @appendix.
+A total of *20* runs were performed for each parameter combination.The first 5 runs where discarded to allow the system to stabilize. This is in accordance to the recommendations in @number_of_runs. For each measured value, if applicable a CoV range chart is produced and will be referenced, these can be found in @appendix. The acceptable range of the CoV is taken from @paae_cov_range. The Cov charts for each part, can be found in the appendix section @appendix. All benchmarks where executed on the system while the least amount of other programs were running at the same moment of performing the benchmarks.
 
 
 // #pagebreak()
 = Part 1: Addition vs Multiplication
 
-This section will discuss, comparing the performance between the addition and multiplication operations. The general gpu speedup compared to cpu will also be discussed.
+This section evaluates the performance differential between addition and multiplication operations. Furthermore, it quantifies the overall GPU acceleration relative to a CPU baseline to determine the magnitude of the observed speedup
+
 
 == Setup
 
-The code for this part can be found in the file: `part-1.cpp` and the kernel file in `partOne.cl` Included in the `partOne.cl` kernel file, are two separate kernels, respectively: `mul_continuous` , `add_continuous`.
+The code for this part can be found in the file: `part-1.cpp` and the kernel file in `partOne.cl` Included in the `partOne.cl` kernel file, are two separate kernels, respectively: `mul_continuous`, `add_continuous`.
 
 
 == GPU Analysis
 
-Let's start of with analyzing the gpu performance. The easiest chart to get started, is time chart. Plotting the time vs the array size can be seen in @part-1-gpu-time-vs-array-size. With the color, differentiating between the 2 operations.
+The evaluation begins with an analysis of GPU performance, utilizing execution time as the primary metric. @part-1-gpu-time-vs-array-size illustrates the relationship between execution time and array size, with distinct colors utilized to differentiate between the addition and multiplication operations.
+
 
 #figure(
   image(
     "images/part-1/desktop/part_1_gpu_time_vs_array_size.pdf",
   ),
-  caption: [],
+  caption: [GPU Execution time vs Array Size],
 ) <part-1-gpu-time-vs-array-size>
 
-The only notable, to remark on the plot, is that only starting from an array size of $2^16$, does the computational intensity increase enough for the work to be reflected in the time taking. Starting from this point one, the time logarithmically with the size of the array.
+A notable observation from the data is that the computational workload only becomes significant enough to impact execution time at an array size of $2^18$. Beyond this threshold, the execution time scales linearly with the array size, as evidenced by the constant slope on the logarithmic plot.
 
-Continuing from the time variable, to the memory bandwidth vs array size in @part-1-memory-bandwidth-vs-array-size.
+To further evaluate performance, the bandwidth utilization is plotted against array size in @part-1-memory-bandwidth-vs-array-size.
 
 #figure(
   image(
     "images/part-1/desktop/part_1_memory_bandwidth_vs_array_size.pdf",
   ),
-  caption: [],
+  caption: [GPU Memory Bandwidth vs Array Size],
 ) <part-1-memory-bandwidth-vs-array-size>
 
-The memory bandwidth increases with the increase in array size, with a peak at the array size of $2^18$.
+The effective memory bandwidth scales proportionally with array size until reaching a peak at $2^18$. Beyond this saturation point, throughput begins to decline as the system encounters overheads associated with kernel invocation, kernel inefficiencies and hardware-level memory constraints. At scales of $2^26$ and higher, the results suggest that the GPU enters a memory-bound regime, where performance is strictly limited by the available bus width.
 
-// TODO: *WHY?*.
 
-Increasing the size of the array beyond this 'ridge point', we are limited by the kernel (construction inefficiency) and available memory bandwidth.Increasing the array size to $2^26$ and beyond, showcase that the gpu *may* potentially be memory limited.
-
-Before making strong conclusion's, let's take a look at the computationally intensity of the benchmark in @part-1-compute-throughput-vs-array-size.
+To provide a more robust basis for these conclusions, the arithmetic throughput is examined in @part-1-compute-throughput-vs-array-size. This metric allows for a precise evaluation of the computational intensity across varying array sizes.
 
 #figure(
   image(
     "images/part-1/desktop/part_1_compute_throughput_vs_array_size.pdf",
   ),
-  caption: [],
+  caption: [Compute Throughput vs Array Size],
 ) <part-1-compute-throughput-vs-array-size>
 
-The same curve as in @part-1-memory-bandwidth-vs-array-size is visible. The initial conclusion that can be drown from this figure and the previous one, is that at the moment, this kernel is memory bound.
+The trends observed in @part-1-compute-throughput-vs-array-size mirror those in @part-1-memory-bandwidth-vs-array-size. A primary conclusion derived from these figures is that the current kernel implementation is memory-bound, as performance scales in direct correlation with memory bandwidth utilization rather than raw computational capacity.
 
 #figure(
   image(
     "images/part-1/desktop/part_1_bandwidth_percentage_vs_array_size.pdf",
   ),
-  caption: [],
+  caption: [Bandwidth Percentage Utilization vs Array Size],
 ) <part-1-bandwidth-percentage-vs-array-size>
 
-When plotting the memory bandwidth in percentage to the max theoretical performance, it is clearly visible that the GPU is memory bound. The peak at array size of $2^18$, could be explained by the fact the two source arrays and target arrays can be stored inside of the gpu's L2 cache, which for an RTX 3070 is 4MB #footnote[https://www.techpowerup.com/gpu-specs/geforce-rtx-3070.c3674].
+Normalizing the observed bandwidth against the GPU's theoretical peak confirms that the implementation is bandwidth-limited. The throughput maximum at $2^18$ *may* suggest optimal cache utilization; for the RTX 3070 architecture, this data volume aligns with the 4MB L2 cache limit #footnote[https://www.techpowerup.com/gpu-specs/geforce-rtx-3070.c3674]. Beyond this threshold, the working set exceeds cache capacity, forcing the system to rely on global memory bandwidth.
+
 
 == CPU vs GPU
 
-Let's start by comparing the GPU performance to CPU performance, this graph is depicted in @part-1-speedup-comparison.
+A comparative analysis of GPU versus CPU performance is presented in @part-1-speedup-comparison. This comparison quantifies the GPU speedup by contrasting the high-throughput parallel architecture of the GPU against the sequential execution model typical of a CPU.
 
 #figure(
   image(
@@ -160,14 +160,12 @@ Let's start by comparing the GPU performance to CPU performance, this graph is d
   caption: [],
 ) <part-1-speedup-comparison>
 
-Comparison to CPU performance is done using, a very naive CPU algorithm which does a loop over the loop. A better comparison, would be the usage of parallelism & potential even SIMD to further increase CPU performance. For this part, the CPU will keep using a naive algorithm.
-
-As is visible on figure @part-1-speedup-comparison, the speed gained by using the parallelism of the GPU has a massive impact on the performance between both.
+The CPU performance is benchmarked using a baseline sequential implementation consisting of a standard iterative loop. Further optimization; such as multithreading or SIMD, could enhance CPU throughput. For this part, the CPU will keep using a naive algorithm.
 
 
 == Conclusion
 
-From the conduced benchmarks and resulting graphs, it can be concluded that there is not considerably different in speed between the additional or multiplication operation on a RTX 3070 gpu. The comparison of the GPU to a naive CPU algorithm, showcase the massive parallelism capabilities of GPU's.
+The benchmarks reveal no significant performance difference between addition and multiplication operations. This symmetry in execution time suggests that both operations are equally optimized within the GPU's functional units. As illustrated in @part-1-speedup-comparison, the parallel architecture of the GPU provides a substantial performance advantage over the CPU baseline.
 
 
 
@@ -176,7 +174,7 @@ From the conduced benchmarks and resulting graphs, it can be concluded that ther
 // #colbreak()
 = Part 2: Elements Per Thread
 
-This section will analyze the result of increasing the number of elements a single thread (kernel item) is responsible for on the performance of the execution. These different access patterns are described as `continuous` & `strided`. They are based on the pdf #footnote[http://parallel.vub.ac.be/education/gpu/theory/GPU%20Computing%20-%20Lesson%202%20doc%20-%20Programming%20GPUs%20-%20levels%200%201%20and%202.pdf] mentioned in the assignment description.
+This section will analyze the result of increasing the number of elements a single thread (kernel item) is responsible for on the performance of the execution. These different access patterns are described as `continuous` & `strided`. They are based on the pdf @part_2_doc in the assignment description.
 
 == Setup
 
@@ -368,7 +366,7 @@ The experiment in question, has clearly shown the appearance of the roofline mod
 
 This section will quickly discuss the impact of the workgroup-size on the performance of the CI kernel, in part 3.
 
-Let's start of with charting the time in function of the workgroup size, across the LC & EPT values, using a ridgeline #footnote[https://www.data-to-viz.com/graph/ridgeline.html] visualization.
+Let's start of with charting the time in function of the workgroup size, across the LC & EPT values, using a ridge line #footnote[https://www.data-to-viz.com/graph/ridgeline.html] visualization.
 
 #figure(
   image(
@@ -473,7 +471,7 @@ This section will discuss the usage of local memory before performing operations
 ) <desktop>
 
 
-=== Macbook
+=== MacBook
 
 #figure(
   table(
@@ -485,7 +483,7 @@ This section will discuss the usage of local memory before performing operations
     // TODO: Update this value
     [OS], [*TODO*],
   ),
-  caption: [Macbook Specifications],
+  caption: [MacBook Specifications],
 ) <macbook>
 
 
@@ -498,7 +496,7 @@ This section will discuss the usage of local memory before performing operations
   image(
     "images/part-1/desktop/part_1_gpu_time_ns_cov_cov.pdf",
   ),
-  caption: [],
+  caption: [Desktop - Part 1 - GPU Time CoV],
 ) <part-1-time-covs>
 
 
@@ -506,15 +504,16 @@ This section will discuss the usage of local memory before performing operations
   image(
     "images/part-1/desktop/part_1_gpu_gbps_cov_cov.pdf",
   ),
-  caption: [],
+  caption: [Desktop - Part 1 - Memory Bandwidth CoV],
 ) <part-1-gpbs-covs>
 
 #figure(
   image(
     "images/part-1/desktop/part_1_gpu_gflops_cov_cov.pdf",
   ),
-  caption: [],
+  caption: [Desktop - Part 1 - Compute Throughput CoV],
 ) <part-1-gflops-covs>
+
 
 
 
@@ -525,8 +524,9 @@ This section will discuss the usage of local memory before performing operations
   image(
     "images/part-2/desktop/part_2_time_vs_ept_cov.pdf",
   ),
-  caption: [],
+  caption: [Desktop - Part 2 - GPU Time CoV],
 ) <part-2-time-covs>
+
 
 
 #pagebreak()
@@ -536,14 +536,14 @@ This section will discuss the usage of local memory before performing operations
   image(
     "images/part-3/desktop/part_3_time_cov.pdf",
   ),
-  caption: [],
+  caption: [Desktop - Part 3 - GPU Time CoV],
 ) <part-3-time-covs>
 
 #figure(
   image(
     "images/part-3/desktop/part_3_gbps_cov.pdf",
   ),
-  caption: [],
+  caption: [Desktop - Part "" - Memory Bandwidth CoV],
 ) <part-3-gpbscovs>
 
 
@@ -551,7 +551,7 @@ This section will discuss the usage of local memory before performing operations
   image(
     "images/part-3/desktop/part_3_gflops_cov.pdf",
   ),
-  caption: [],
+  caption: [Desktop - Part 3 - Compute Throughput CoV],
 ) <part-3-gflops-covs>
 
 
@@ -564,21 +564,21 @@ This section will discuss the usage of local memory before performing operations
   image(
     "images/part-3-2/desktop/part3_add_time_cov.pdf",
   ),
-  caption: [],
+  caption: [Desktop - Part 3.2 - GPU Time CoV],
 ) <part-3-2-time-covs>
 
 #figure(
   image(
     "images/part-3-2/desktop/part3_add_gbps_cov.pdf",
   ),
-  caption: [],
+  caption: [Desktop - Part 3.2 - Memory Bandwidth CoV],
 ) <part-3-2-gpbs-covs>
 
 #figure(
   image(
     "images/part-3-2/desktop/part3_add_gflops_cov.pdf",
   ),
-  caption: [],
+  caption: [Desktop - Part 3.2 - Compute Throughput CoV],
 ) <part-3-2-gflops-covs>
 
 
@@ -589,21 +589,21 @@ This section will discuss the usage of local memory before performing operations
   image(
     "images/part-4/desktop/part_4_time_cov.pdf",
   ),
-  caption: [],
+  caption: [Desktop - Part 4 - GPU Time CoV],
 ) <part-4-time-covs>
 
 #figure(
   image(
     "images/part-4/desktop/part_4_gbps_cov.pdf",
   ),
-  caption: [],
+  caption: [Desktop - Part 4 - Memory Bandwidth CoV],
 ) <part-4-gpbs-covs>
 
 #figure(
   image(
     "images/part-4/desktop/part_4_gflops_cov.pdf",
   ),
-  caption: [],
+  caption: [Desktop - Part 4 - Compute Throughput CoV],
 ) <part-4-gflops-covs>
 
 
