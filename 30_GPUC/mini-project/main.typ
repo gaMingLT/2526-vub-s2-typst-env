@@ -92,7 +92,7 @@ A total of *20* runs were performed for each parameter combination.The first 5 r
 
 
 // #pagebreak()
-= Part 1: Addition vs Multiplication
+= Part 1: Addition vs Multiplication <part-1-add-vs-mul>
 
 This section evaluates the performance differential between addition and multiplication operations. Furthermore, it quantifies the overall GPU acceleration relative to a CPU baseline to determine the magnitude of the observed speedup
 
@@ -174,15 +174,16 @@ The benchmarks reveal no significant performance difference between addition and
 // #colbreak()
 = Part 2: Elements Per Thread
 
-This section will analyze the result of increasing the number of elements a single thread (kernel item) is responsible for on the performance of the execution. These different access patterns are described as `continuous` & `strided`. They are based on the pdf @part_2_doc in the assignment description.
+This section analyzes the result of increasing the number of elements per thread (EPT) a single thread (work-item) is responsible for on the performance of the execution. These different access patterns are described as `contiguous` & `strided`. They are based on the pdf @part_2_doc in the assignment description.
+
 
 == Setup
 
-The array size is fixed for all benchmark variations performed in this part to $2^22$, based on the data gathered in part 1 and the workgroup size is set to $64$.
+The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in section @part-1-add-vs-mul. Furthermore, the workgroup size is fixed at $64$ to maintain consistent results.
 
 The benchmark file is called: `part-2.cpp` and kernel file `partTwo.cl`. Included in the kernel file are the following kernels: `mul_contiguous`, `add_continguous`, `mul_strided`, `add_strided`.
 
-The `contiguous` pattern, corresponds t the example code shown in @pattern-contiguous-code.
+The `contiguous` pattern, corresponds to the example code shown in @pattern-contiguous-code.
 
 #figure(
   zebraw(
@@ -196,7 +197,7 @@ The `contiguous` pattern, corresponds t the example code shown in @pattern-conti
         data_index[N * get_global_id(0) + i] = get_global_id(0);
     ```,
   ),
-  caption: [],
+  caption: [Example: Contiguous Pattern Code],
 ) <pattern-contiguous-code>
 
 The `strided` access pattern, corresponds to the example code shown in @pattern-strided-code.
@@ -214,12 +215,15 @@ The `strided` access pattern, corresponds to the example code shown in @pattern-
        data_index[get_global_id(0) + i*get_global_size(0)] = get_global_id(0);
     ```,
   ),
-  caption: [],
+  caption: [Example: Strided Pattern Code],
 ) <pattern-strided-code>
+
+
 
 == Visualization
 
-The changes the variable elements per thread brings to the orchestration of work-item is shown in @drawing-1.
+The impact of the Elements Per Thread (EPT) variable on the workload distribution across individual work-items is illustrated in @drawing-1.
+
 
 #figure(
   image(
@@ -228,63 +232,69 @@ The changes the variable elements per thread brings to the orchestration of work
   caption: [Elements per thread (8) - Work Item Orchestration],
 ) <drawing-1>
 
-For the example in question, let's set the EPT value to $8$, which indicates, each work item will be responsible for adding or multiplying 8 elements from the target arrays to source array. The array size ($2^22$) can than be divided by this number 8 to arrive at the number of work items that need to be launched by the kernel ($524288$).
 
-Calculating the number of work groups can than be done, by dividing this number by the workgroup-size ($64$), which results in $8192$ work groups.
+In this specific scenario, the Elements Per Thread (EPT) is set to $8$, indicating that each individual work-item is responsible for processing eight elements from the source arrays. Consequently, the total number of work-items launched to cover the $2^22$ array size is reduced by a factor of eight, resulting in a global work size of $524,288$. Calculating the number of work groups can than be done, by dividing this number by the workgroup-size ($64$), which results in $8192$ work groups.
 
 
-== Continuous vs Strided
 
-Start of with looking at the time it takes between both operations and different access patterns in figure @part-2-time-vs-ept.
+== Contiguous vs Strided
+
+The initial analysis focuses on the execution time across both arithmetic operations, as well as the impact of the different access patterns. These relationships are illustrated in @part-2-time-vs-ept, which plots execution time as a function of the Elements Per Thread (EPT).
+
 
 #figure(
   image(
     "images/part-2/desktop/part_2_time_vs_ept.pdf",
   ),
-  caption: [],
+  caption: [GPU Execution Time vs EPT - mul & add operations - contiguous vs strided pattern],
 ) <part-2-time-vs-ept>
 
-This chart gives the first indication that the `strided` access pattern has better performance compared to the `continuous` pattern.
 
-When putting the continuous pattern vs the strided pattern, and plotting the speedup in figure @part-2-time-covs, the picture becomes clearer.
+Initial observations from the chart suggest that the strided access pattern yields better performance compared to the contiguous pattern. This performance difference is further clarified in @part-2-time-covs, where a direct comparison of the two strategies reveals a significant speedup favoring the strided approach as the EPT factor increases.
+
 
 #figure(
   image(
     "images/part-2/desktop/part_2_time_speedup_cont_vs_strided.pdf",
   ),
-  caption: [],
+  caption: [Strided Pattern Speedup vs Contiguous Pattern],
 ) <part-2-time-speedup-cont-vs-strided>
 
-The graphs show a very clear speedup of the `strided` access pattern starting from 8 ETP value. The reason for this speedup of this pattern becomes clear when looking at the memory bandwidth for the patterns in @part-2-bandwidth-ci.
+
+The results demonstrate a performance inflection point for the strided access pattern once the EPT reaches a value of $8$. The underlying mechanism for this acceleration is can be assigned by the memory bandwidth analysis in @part-2-bandwidth-ci, which reveals a significant increase in data throughput compared to the contiguous implementation.
+
 
 #figure(
   image(
     "images/part-2/desktop/part_2_memory_bandwidth_ci.pdf",
   ),
-  caption: [],
+  caption: [Memory Bandwidth CI Intervals],
 ) <part-2-bandwidth-ci>
 
-The `continuous` access pattern is shown on the left and the `strided` on the right. The large drop in memory bandwidth for the continuous pattern when the EPT value is increased from $8$ to $16$ is noticeable. A similar drop in bandwidth is remarked for the continuous pattern when going from $64$ to $128$ and to $256$.
 
-Let's continue to take a look at the compute intensity of both strategies, as shown in @part-2-compute-ci.
+The contrast between the contiguous access pattern (left) and the strided pattern (right) is stark. A significant drop in memory bandwidth is observed for the contiguous model as the EPT increases from $8$ to $16$. Similar performance regressions occur at higher values, specifically when transitioning from $64$ to $128$ and $256$, suggesting a potential bottleneck in the access pattern or gpu limitation.
+
+
+The following analysis examines the computational intensity of both strategies, as illustrated in @part-2-compute-ci. By comparing the arithmetic throughput across different EPT values.
+
 
 #figure(
   image(
     "images/part-2/desktop/part_2_compute_ci.pdf",
   ),
-  caption: [],
+  caption: [Computational Throughput CI Intervals],
 ) <part-2-compute-ci>
 
-Here the picture becomes much clearer again, at the same time that the memory bandwidth takes a sharp drop, the compute throughput does to. The drop for the continuous pattern arrives at the same time, and for the strided pattern also.
+The data reveals a strong correlation between memory bandwidth and computational throughput; as bandwidth undergoes a sharp drop, the compute performance suffers an identical regression.
 
-But comparing the add vs mul operation, the drop for the mul operation appears to be delayed by one EPT value increase.
+This synchronization confirms that the kernel is strictly memory-bound. Notably, while the contiguous and strided patterns exhibit these drops at similar thresholds, the multiplication operation displays a one-step phase shift in its performance decline compared to addition.
 
 
 == Conclusion
 
-Combining all the information from the charts above, it can be concluded that the `strided` pattern gives the GPU the data it needs to perform the computations, up until the elements per thread become to large again and the gpu is unable to saturate the bandwidth and give the gpu the data it needs to compute.
+In summary, the data suggests that the strided access pattern gives the GPU the data it needs to perform the computations, up until the elements per thread become to large again and the gpu is unable to saturate the bandwidth and give the gpu the data it needs to compute. At this point, the increased workload per thread likely exhausts local resources, preventing the GPU from effectively saturating the available bandwidth.
 
-Apart from the performance that can be noticed from the data, is the fact that the CI interval of the continuous are much tighter than those of the strided pattern. No immediate answer can be given for this difference in intervals between access patterns.
+Furthermore, a notable disparity exists in the confidence intervals (CI); the contiguous pattern exhibits significantly lower variance than the strided approach. No immediate answer can be given for this difference in intervals between access patterns.
 
 
 
