@@ -392,12 +392,40 @@ Completing this section with an additional roofline model chart as illustrated i
 // #pagebreak()
 = Part 4: Local vs Global
 
+// TODO: Update
+This section will discuss the usage of local memory before performing operations on elements in an array.
 
 == Setup
 
+// TODO: *TODO*
 
-// #pagebreak()
-// = Extra: Desktop vs Macbook
+== Analysis
+
+// TODO: *TODO*
+
+#figure(
+  image(
+    "images/part-4/desktop/part_4_compare_all_ci.pdf",
+  ),
+  caption: [],
+) <part-4-compare-all-ci>
+
+
+// TODO: *TODO*
+
+#figure(
+  image(
+    "images/part-4/desktop/part_4_time_speedup.pdf",
+  ),
+  caption: [],
+) <part-4-time-speedup>
+
+
+== Conclusion
+
+
+
+
 
 
 
@@ -553,8 +581,29 @@ Completing this section with an additional roofline model chart as illustrated i
 ) <part-3-2-gflops-covs>
 
 
+
 === Part 4
 
+#figure(
+  image(
+    "images/part-4/desktop/part_4_time_cov.pdf",
+  ),
+  caption: [],
+) <part-4-time-covs>
+
+#figure(
+  image(
+    "images/part-4/desktop/part_4_gbps_cov.pdf",
+  ),
+  caption: [],
+) <part-4-gpbs-covs>
+
+#figure(
+  image(
+    "images/part-4/desktop/part_4_gflops_cov.pdf",
+  ),
+  caption: [],
+) <part-4-gflops-covs>
 
 
 #bibliography("references.bib")
