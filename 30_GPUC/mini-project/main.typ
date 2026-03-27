@@ -292,10 +292,10 @@ This synchronization confirms that the kernel is strictly memory-bound. Notably,
 
 == Conclusion
 
+
 In summary, the data suggests that the strided access pattern gives the GPU the data it needs to perform the computations, up until the elements per thread become to large again and the gpu is unable to saturate the bandwidth and give the gpu the data it needs to compute. At this point, the increased workload per thread likely exhausts local resources, preventing the GPU from effectively saturating the available bandwidth.
 
 Furthermore, a notable disparity exists in the confidence intervals (CI); the contiguous pattern exhibits significantly lower variance than the strided approach. No immediate answer can be given for this difference in intervals between access patterns.
-
 
 
 
@@ -303,72 +303,95 @@ Furthermore, a notable disparity exists in the confidence intervals (CI); the co
 // #colbreak()
 = Part 3: Roofline Model
 
-This section will discuss the experiment to create a roofline model as described in the assignment & discussed in the lectures. Before showcasing the roofline model, several other charts will be discussed first, showcasing the utility of the roofline model chart.
+
+This section will discuss the experiment to create a roofline model as described in the assignment & discussed in the lectures. Before showcasing the roofline model, several other charts will be discussed first, showcasing the utility of the roofline model.
+
 
 == Setup
 
-The array size is fixed for all benchmark variations performed in this part to $2^22$, based on the data gathered in part 1 and the workgroup size is set to $64$. The benchmark file is called `part-3.cpp` and kernel file: `partThree.cl`. Included in the kernel file is a single kernel called: `float_sum_increasing_ci`. It combines the elements per thread loop with the kernel `intSumIncreasingCI`, present in the list of gpu exercises given at the start of the semester. The benchmark file, also update the formulas for calculating the bandwidth (throughput), compute intensity (flops), and arithmetic intensity with formulas from the `sumIntsIncreasingCI.cpp` file.
+The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in section @part-1-add-vs-mul. Furthermore, the workgroup size is fixed at $64$ to maintain consistent results.
+
+The benchmark file is called `part-3.cpp` and kernel file: `partThree.cl`. Included in the kernel file is a single kernel called: `float_sum_increasing_ci`. It combines the elements per thread loop with the kernel `intSumIncreasingCI`, present in the list of gpu exercises given at the start of the semester. The benchmark file, also update the formulas for calculating the bandwidth (throughput), compute intensity (flops), and arithmetic intensity with formulas from the `sumIntsIncreasingCI.cpp` file.
 
 
 
 == Analysis
 
-Let's start with some charts, depicting the loop count for the compute intensity, memory bandwidth and runtime as show in @part-3-all-vs-loop-count.
+
+@part-3-all-vs-loop-count illustrates the relationship between the internal kernel loop count and three key indicators: compute intensity, memory bandwidth, and total execution time.
+
 
 #figure(
   image(
     "images/part-3/desktop/part_3_memory_and_flops_vs_loop_count.pdf",
   ),
-  caption: [],
+  caption: [Loop Count vs Compute; Bandwidth & Execution Time],
 ) <part-3-all-vs-loop-count>
 
-The plots on the graphs do not indicated out of the ordinary, increasing the loop count increases the runtime of the execution. The behavior between the compute intensity (left) and memory bandwidth (middle) is interesting and warrants further discussion, as designed by the experiment.
 
-Before analyzing the roofline model, let's compare the compute intensity for the different loop count values in function of the elements per thread, in figure @part-3-flops-loop-count-ci.
+Execution runtime increases proportionally with the loop count. More significantly, the data reveals shift between compute intensity and memory bandwidth. This behavior is a key focus of the experiment, as it illustrates the GPU's shift from a memory-bound to a compute-bound regime.
+
+Before analyzing the roofline model, @part-3-flops-loop-count-ci illustrates how the computational intensity scales as the instruction density increases, providing a baseline for identifying the transition to a compute-bound state.
+
 
 #figure(
   image(
     "images/part-3/desktop/part_3_gflops_vs_loop_count_ci.pdf",
   ),
-  caption: [],
+  caption: [GPU Compute Throughput vs Loop Count],
 ) <part-3-flops-loop-count-ci>
 
+Increasing the EPT factor beyond a certain point ($>=32$) has a negative effect on the computational throughput.
 
-A similar graph can be made for the bandwidth in function of the loop count and different EPT values, in @part-3-bandwidth-loop-count-ci.
+
+A corresponding analysis for effective memory bandwidth is presented in @part-3-bandwidth-loop-count-ci, where the throughput is parameterized by both the loop count and the Elements Per Thread (EPT).
+
 
 #figure(
   image(
     "images/part-3/desktop/part_3_bandwidth_vs_loop_count_ci.pdf",
   ),
-  caption: [],
+  caption: [Memory Bandwidth Utilization vs Loop Count],
 ) <part-3-bandwidth-loop-count-ci>
 
 The same behavior as seen in graphs in figure @part-3-all-vs-loop-count, is again visible in the above two graphs, for different loop counts. The EPT value 'only' determines the ranges of the values, but does not change the chart behavior.
 
-Plotting the arithmetic intensity, in function of the loop count as shown in @part-3-ai-vs-loop-count-ci.
+Increasing the EPT beyond ($>= 32$) for any loop factor also showcases a decreasing bandwidth & computational throughput. Potentially indicating that the through the smaller of threads / work-items launched the GPU cannot fully utilize its compute & bandwidth capabilities.
 
-#figure(
-  image(
-    "images/part-3/desktop/part_3_ai_vs_loop_count_ci.pdf",
-  ),
-  caption: [],
-) <part-3-ai-vs-loop-count-ci>
 
-The model, as seen in the lectures, which summaries all the plots and behavior's described is the roofline model, as shown in @part-3-model.
+
+// Plotting the arithmetic intensity, in function of the loop count as shown in @part-3-ai-vs-loop-count-ci.
+
+
+// #figure(
+//   image(
+//     "images/part-3/desktop/part_3_ai_vs_loop_count_ci.pdf",
+//   ),
+//   caption: [],
+// ) <part-3-ai-vs-loop-count-ci>
+
+
+@part-3-model presents the Roofline Analysis,  which summaries all the plots and behavior's described earlier.
+
 
 #figure(
   image(
     "images/part-3/desktop/part_3_roofline_model.pdf",
   ),
-  caption: [],
+  caption: [RTX3070 - Roofline Model],
 ) <part-3-model>
 
-For the GPU in question, the memory bandwidth & peak computational throughput is indicated. The results follow the memory sloop from the starting loop count (LC) $8$ until $64$, were it starts diverging. The 'ridge point' at which the actual data start becoming 'memory bound' occurs much earlier than the theoretical value.
+
+For the GPU in question, the memory bandwidth & peak computational throughput is indicated. The results follow the memory slope from the starting loop count (LC) $8$ until $64$, were it starts diverging. The 'ridge point' at which the actual data start becoming 'memory bound' occurs much earlier than the theoretical value.
+
 
 
 == Conclusion
 
+
 The experiment in question, has clearly shown the appearance of the roofline model in the data, this part of the experiment can be considered a success. With small note made for the practical ridge point not matching the expected theoretical point.
+
+
 
 
 // #colbreak()
