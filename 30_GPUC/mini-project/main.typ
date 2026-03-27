@@ -173,7 +173,7 @@ From the conduced benchmarks and resulting graphs, it can be concluded that ther
 
 // #pagebreak()
 
-#colbreak()
+// #colbreak()
 = Part 2: Elements Per Thread
 
 This section will analyze the result of increasing the number of elements a single thread (kernel item) is responsible for on the performance of the execution. These different access patterns are described as `continuous` & `strided`. They are based on the pdf #footnote[http://parallel.vub.ac.be/education/gpu/theory/GPU%20Computing%20-%20Lesson%202%20doc%20-%20Programming%20GPUs%20-%20levels%200%201%20and%202.pdf] mentioned in the assignment description.
@@ -221,15 +221,18 @@ The `strided` access pattern, corresponds to the example code shown in @pattern-
 
 == Visualization
 
-*TODO*
+The changes the variable elements per thread brings to the orchestration of work-item is shown in @drawing-1.
 
 #figure(
   image(
     "images/drawings/drawings-mini-report-1.pdf",
   ),
-  caption: [],
+  caption: [Elements per thread (8) - Work Item Orchestration],
 ) <drawing-1>
 
+For the example in question, let's set the EPT value to $8$, which indicates, each work item will be responsible for adding or multiplying 8 elements from the target arrays to source array. The array size ($2^22$) can than be divided by this number 8 to arrive at the number of work items that need to be launched by the kernel ($524288$).
+
+Calculating the number of work groups can than be done, by dividing this number by the workgroup-size ($64$), which results in $8192$ work groups.
 
 
 == Continuous vs Strided
@@ -289,7 +292,7 @@ Apart from the performance that can be noticed from the data, is the fact that t
 
 
 // #pagebreak()
-#colbreak()
+// #colbreak()
 = Part 3: Roofline Model
 
 This section will discuss the experiment to create a roofline model as described in the assignment & discussed in the lectures. Before showcasing the roofline model, several other charts will be discussed first, showcasing the utility of the roofline model chart.
