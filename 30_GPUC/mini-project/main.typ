@@ -81,26 +81,25 @@ The final part will compare the local vs global memory location, as indicated in
 
 = Structure
 
-*TODO*
+In the zip file, inside of the `src`, there is a `project-desktop` folder, containing the `c++` files which execute the kernel benchmarks. For each part, there is a separate `c++` file. The kernel files for each part, are located in the root `src` folder. The following list of kernels should be present in the root folder: `partOne`, `partTwo`, `partThree`, `partFour`.
+
+
 
 
 = Methodology
 
-For each iteration of the combination of values to be measures, *20* runs where measured. The first 5 runs where discarded to allow the system to stabilize. This is in accordance to the recommendations in @number_of_runs. For each measured value, if applicable a Cov range chart is produced and will be reference, these can be found in @appendix. The acceptable range of the Cov is taken from @paae_cov_range. The Cov charts for each part, can be found in the appendix section @appendix.
+For each combination of values to be measures, *20* runs where measured. The first 5 runs where discarded to allow the system to stabilize. This is in accordance to the recommendations in @number_of_runs. For each measured value, if applicable a Cov range chart is produced and will be reference, these can be found in @appendix. The acceptable range of the Cov is taken from @paae_cov_range. The Cov charts for each part, can be found in the appendix section @appendix.
 
 
-#pagebreak()
+// #pagebreak()
 = Part 1: Addition vs Multiplication
 
-In this part, a comparison between the addition & multiplication operation on gpu's is made. While also comparing the general gpu performance to cpu performance.
+This section will discuss, comparing the performance between the addition and multiplication operations. The general gpu speedup compared to cpu will also be discussed.
 
 == Setup
 
-The code for this part can be found in the file: `part-1.cpp` and the kernel file in `partOne.cl`.
+The code for this part can be found in the file: `part-1.cpp` and the kernel file in `partOne.cl` Included in the `partOne.cl` kernel file, are two separate kernels, respectively: `mul_continuous` , `add_continuous`.
 
-== Code
-
-// TODO: More here
 
 == GPU Analysis
 
@@ -181,16 +180,56 @@ This section will analyze the result of increasing the number of elements a sing
 
 == Setup
 
-// Workgroup size = 64
-// And more ...
 The array size is fixed for all benchmark variations performed in this part to $2^22$, based on the data gathered in part 1 and the workgroup size is set to $64$.
 
-// TODO: More here
+The benchmark file is called: `part-2.cpp` and kernel file `partTwo.cl`. Included in the kernel file are the following kernels: `mul_contiguous`, `add_continguous`, `mul_strided`, `add_strided`.
 
+The `contiguous` pattern, corresponds t the example code shown in @pattern-contiguous-code.
 
-== Code
+#figure(
+  zebraw(
+    lang: false,
+    ```cpp
+    // host code
+    unsigned int data_index[W];
+    cl::NDRange global(W/N);
+    // device code
+    for (int i = 0; i < N; ++i)
+        data_index[N * get_global_id(0) + i] = get_global_id(0);
+    ```,
+  ),
+  caption: [],
+) <pattern-contiguous-code>
 
-// TODO: More here
+The `strided` access pattern, corresponds to the example code shown in @pattern-strided-code.
+
+#figure(
+  zebraw(
+    lang: false,
+    ```cpp
+    // host code
+    unsigned int data_index[W];
+    cl::NDRange global(W/N);
+
+    // device code
+    for (int i = 0; i < N; ++i)
+       data_index[get_global_id(0) + i*get_global_size(0)] = get_global_id(0);
+    ```,
+  ),
+  caption: [],
+) <pattern-strided-code>
+
+== Visualization
+
+*TODO*
+
+#figure(
+  image(
+    "images/drawings/drawings-mini-report-1.pdf",
+  ),
+  caption: [],
+) <drawing-1>
+
 
 
 == Continuous vs Strided
@@ -253,18 +292,12 @@ Apart from the performance that can be noticed from the data, is the fact that t
 #colbreak()
 = Part 3: Roofline Model
 
+This section will discuss the experiment to create a roofline model as described in the assignment & discussed in the lectures. Before showcasing the roofline model, several other charts will be discussed first, showcasing the utility of the roofline model chart.
 
 == Setup
 
-// Workgroup size = 64
-// and more...
-The array size is fixed for all benchmark variations performed in this part to $2^22$, based on the data gathered in part 1 and the workgroup size is set to $64$.
+The array size is fixed for all benchmark variations performed in this part to $2^22$, based on the data gathered in part 1 and the workgroup size is set to $64$. The benchmark file is called `part-3.cpp` and kernel file: `partThree.cl`. Included in the kernel file is a single kernel called: `float_sum_increasing_ci`. It combines the elements per thread loop with the kernel `intSumIncreasingCI`, present in the list of gpu exercises given at the start of the semester. The benchmark file, also update the formulas for calculating the bandwidth (throughput), compute intensity (flops), and arithmetic intensity with formulas from the `sumIntsIncreasingCI.cpp` file.
 
-// TODO: More here
-
-== Code
-
-// TODO: More here
 
 
 == Analysis
