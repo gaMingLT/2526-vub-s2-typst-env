@@ -394,12 +394,13 @@ The experiment in question, has clearly shown the appearance of the roofline mod
 
 
 
-// #colbreak()
+#colbreak()
 = Part 3.2: Workgroup Size
 
-This section will quickly discuss the impact of the workgroup-size on the performance of the CI kernel, in part 3.
+This section evaluates the sensitivity of the Compute Intensity (CI) kernel from part 3, to variations in workgroup size.
 
-Let's start of with charting the time in function of the workgroup size, across the LC & EPT values, using a ridge line #footnote[https://www.data-to-viz.com/graph/ridgeline.html] visualization.
+Figure @part-3-2-ridgeline-time provides a multi-dimensional analysis of execution time, utilizing a ridge line #footnote[https://www.data-to-viz.com/graph/ridgeline.html] visualization to map performance distributions across a range of Loop Counts (LC) and Elements Per Thread (EPT) values.
+
 
 #figure(
   image(
@@ -408,16 +409,20 @@ Let's start of with charting the time in function of the workgroup size, across 
   caption: [Ridgeline Visualization of the GPU time in function of workgroup-size],
 ) <part-3-2-ridgeline-time>
 
-As can be concluded from the figure @part-3-2-ridgeline-time, is that the most optimal range of WGS for the kernel in part 3, is between $32-256$.  This validates the choice to fix the WGS to $64$ across the benchmarks in part 1, 2 & 3.
+
+The ridge line analysis in @part-3-2-ridgeline-time, is that the most optimal range of WGZ for the kernel in part 3, is between $32-256$.  This validates the choice to fix the WGZ to $64$ across the benchmarks in part 1, 2 & 3.
+
 
 Completing this section with an additional roofline model chart as illustrated in figure @part-3-2-model. The distribution of the charts for the different workgroup-size values is clearly visible.
+
 
 #figure(
   image(
     "images/part-3-2/desktop/part3_add_roofline_wgz.pdf",
   ),
-  caption: [],
+  caption: [Roofline Model vs Workgroup Size],
 ) <part-3-2-model>
+
 
 
 // #pagebreak()
