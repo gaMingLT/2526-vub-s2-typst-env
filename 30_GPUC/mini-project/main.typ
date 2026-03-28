@@ -453,12 +453,12 @@ Plotting the execution time of both patterns against each other as illustrated i
   caption: [Local vs Global Speedup],
 ) <part-4-time-speedup>
 
-The speedup alluded to earlier, is clearly visible starting from the array size $2^18$ and propagates until the end of the benchmarked array sizes. The peak speedup is measured to be around $times ~1.2$, and with array size $2^23$.
+The speedup alluded to earlier, is clearly visible starting from the array size $2^18$ and propagates until the end of the benchmarked array sizes. The peak speedup is measured to be around #linebreak() $~1.2$ at an array size of $2^23$.
 
 
 == Conclusion
 
-To summarize the observations, the local memory pattern has clear benefits in utilization of the GPU on larger array sizes. The available bandwidth & memory utilization is greater when compared to the global pattern. For smaller array sizes, there is not discernible speedup, as shown in @part-4-time-speedup.
+To summarize the observations, the local memory pattern has clear benefits in utilization of the GPU on larger array sizes. The available bandwidth & memory utilization is higher when compared to the global pattern. For smaller array sizes, there is not discernible speedup, as shown in @part-4-time-speedup.
 
 Thus, the compute size should be taking into account when deciding which pattern to use. Further experimentation with improved kernels (as presented in exercise set) is warranted to further analyze local memory behavior.
 
