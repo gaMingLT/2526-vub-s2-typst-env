@@ -10,12 +10,11 @@
 
 #let cuhk = super(sym.suit.spade)
 
-#import "@preview/ilm:2.0.0": *
 
 #set text(lang: "en")
 
 #show: ilm.with(
-  title: [GPU Computing - Mini-Project],
+  title: [Mini-Project],
   authors: "Milan Lagae",
   date: datetime(year: 2026, month: 03, day: 29),
 
@@ -156,7 +155,7 @@ This section analyzes the result of increasing the number of elements per thread
 
 == Setup
 
-The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in section @part-1-add-vs-mul. Furthermore, the workgroup size is fixed at $64$ to maintain consistent results.
+The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in @part-1-add-vs-mul. Furthermore, the workgroup size is fixed at $64$ to maintain consistent results.
 
 The benchmark file is called: `part-2.cpp` and kernel file `partTwo.cl`. Included in the kernel file are the following kernels: `mul_contiguous`, `add_continguous`, `mul_strided`, `add_strided`.
 
@@ -287,7 +286,7 @@ This section will discuss the experiment to create a roofline model as described
 
 == Setup
 
-The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in section @part-1-add-vs-mul. Furthermore, the workgroup size is fixed at $64$ to maintain consistent results.
+The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in @part-1-add-vs-mul. Furthermore, the workgroup size is fixed at $64$ to maintain consistent results.
 
 The benchmark file is called `part-3.cpp` and kernel file: `partThree.cl`. Included in the kernel file is a single kernel called: `float_sum_increasing_ci`. It combines the elements per thread loop with the kernel `intSumIncreasingCI`, present in the list of gpu exercises given at the start of the semester. The benchmark file, also update the formulas for calculating the bandwidth (throughput), compute intensity (flops), and arithmetic intensity with formulas from the `sumIntsIncreasingCI.cpp` file.
 
@@ -418,7 +417,7 @@ This section will discuss the performance difference between the use of local & 
 == Setup
 
 
-The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in section @part-1-add-vs-mul. Furthermore, the workgroup size is fixed at $64$ to maintain consistent results.
+The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in @part-1-add-vs-mul. Furthermore, the workgroup size is fixed at $64$ to maintain consistent results.
 
 The benchmark file is called: `part-4.cpp` and kernel file: `partFour.cl`. Included in the kernel file are two separate kernels: `add_reduction_global` and `add_reduction_local`. These kernels were taken from the exercise set. No modification where made to the kernels. The benchmarking file was modified to incorporate changes required for executing the benchmarks. Such modification include; create src array based on array size, rewrite the src buffer on each gpu kernel run and other changes to fit into the benchmark harness.
 
@@ -430,7 +429,6 @@ The benchmark file is called: `part-4.cpp` and kernel file: `partFour.cl`. Inclu
 @part-4-compare-all-ci illustrates the difference between local & global memory pattern and three key indicators: compute intensity, memory bandwidth, and total execution time.
 
 
-// TODO: Update benchmark image, text is clipping
 #figure(
   image(
     "images/part-4/desktop/part_4_compare_all_ci.pdf",
@@ -449,7 +447,6 @@ Due notice that the behavior of the bandwidth & compute metric between both memo
 Plotting the execution time of both patterns against each other as illustrated in @part-4-time-speedup.
 
 
-// TODO: Fix chart - wrong title!
 #figure(
   image(
     "images/part-4/desktop/part_4_time_speedup.pdf",
@@ -514,20 +511,20 @@ Thus, the compute size should be taking into account when deciding which pattern
 ) <desktop>
 
 
-=== MacBook
+// === MacBook
 
-#figure(
-  table(
-    columns: (1fr, 1fr),
-    [*Part*], [*Value*],
-    [CPU], [M2 Pro (6 performance and 4 efficiency)],
-    [OpenCL], [1.2],
-    [RAM], [16GB],
-    // TODO: Update this value
-    [OS], [*TODO*],
-  ),
-  caption: [MacBook Specifications],
-) <macbook>
+// #figure(
+//   table(
+//     columns: (1fr, 1fr),
+//     [*Part*], [*Value*],
+//     [CPU], [M2 Pro (6 performance and 4 efficiency)],
+//     [OpenCL], [1.2],
+//     [RAM], [16GB],
+//     // TODO: Update this value
+//     [OS], [*TODO*],
+//   ),
+//   caption: [MacBook Specifications],
+// ) <macbook>
 
 
 
