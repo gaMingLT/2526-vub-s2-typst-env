@@ -47,9 +47,9 @@
 // #colbreak()
 = Intro
 
-The first section involves a direct comparison between addition and multiplication operations to establish a baseline, as specified in assignment descriptions.
+The first section involves a direct comparison between addition and multiplication operations to establish a baseline, as specified in the assignment descriptions.
 
-Following the comparison in the first part, the kernels are modified to execute on multiple elements simultaneous in two different one-to-many mapping described in the assignment doc @part_2_doc.
+Following the comparison in the first part, the kernels are modified to execute on multiple elements simultaneously in two different one-to-many mapping's schemes @part_2_doc.
 
 For the third section, the compute intensity of the benchmark are parameterized by using a loop count factor. Increasing the compute intensity should surface the limitation of the memory & compute of the gpu.
 
@@ -58,12 +58,12 @@ The final section will compare the trade-offs between local vs global memory on 
 
 = Structure
 
-Included in the zip file is a `src` folder. This folder contains a `project-desktop` folder, the kernel files and the CMake project file. The `src` folder contains all the `c++` files responsible for orchestrating the benchmark execution. The following list of kernels are included: `partOne`, `partTwo`, `partThree`, `partThree-2` `partFour`.
+A `src` folder is included in the zip file. Which folder contains a `project-desktop` folder, the kernel files and the CMake project file. The `src` folder contains all the `c++` files responsible for orchestrating the benchmark execution. The following list of kernels are included: `partOne`, `partTwo`, `partThree`, `partThree-2` and `partFour`.
 
 
 = Methodology
 
-A total of *20* runs were performed for each parameter combination.The first 5 runs where discarded to allow the system to stabilize. This is in accordance with the recommendations in @number_of_runs. For each measured value, if applicable a CoV range chart is produced and will be referenced, these can be found in @appendix. The acceptable range of the CoV is taken from @paae_cov_range. All benchmarks where executed on the system while the least amount of other programs were running at the same moment of performing the benchmarks.
+A total of *20* runs were performed for each parameter combination.The first 5 runs were discarded to allow the system to stabilize. This is in accordance with the recommendations in @number_of_runs. For each measured value, if applicable, a CoV range chart is produced and will be referenced. These can be found in @appendix. The acceptable range of the CoV is taken from @paae_cov_range.
 
 
 #pagebreak()
@@ -74,7 +74,7 @@ This section evaluates the performance differential between addition and multipl
 
 == Setup
 
-The code for this part can be found in the file: `part-1.cpp` and the kernel file in `partOne.cl` Included in the `partOne.cl` kernel file, are two separate kernels, respectively: `mul_continuous`, `add_continuous`.
+The code for this part can be found in the file: `part-1.cpp` and the kernel file in `partOne.cl`. Included in the `partOne.cl` kernel file are two separate kernels, respectively: `mul_continuous` and `add_continuous`.
 
 
 == GPU Analysis
@@ -121,7 +121,7 @@ The trends observed in @part-1-compute-throughput-vs-array-size mirror those in 
   caption: [Bandwidth Percentage Utilization vs Array Size],
 ) <part-1-bandwidth-percentage-vs-array-size>
 
-Normalizing the observed bandwidth against the GPU's theoretical peak confirms that the implementation is bandwidth-limited. The throughput maximum at $2^18$ *may* suggest optimal cache utilization; for the RTX 3070 architecture, this data volume aligns with the 4MB L2 cache limit #footnote[https://www.techpowerup.com/gpu-specs/geforce-rtx-3070.c3674]. Beyond this threshold, the working set exceeds cache capacity, forcing the system to rely on global memory bandwidth.
+Normalizing the observed bandwidth against the GPU's theoretical peak confirms that the implementation is bandwidth-limited as illustrated in @part-1-bandwidth-percentage-vs-array-size. The throughput maximum at $2^18$ *may* suggest optimal cache utilization. For the RTX 3070 architecture, the datat size aligns with the 4MB L2 cache limit #footnote[https://www.techpowerup.com/gpu-specs/geforce-rtx-3070.c3674]. Beyond this threshold, the working set exceeds cache capacity, forcing the system to rely on global memory bandwidth.
 
 
 == CPU vs GPU
@@ -150,14 +150,14 @@ The benchmarks reveal no significant performance difference between addition and
 
 = Part 2: Elements Per Thread
 
-This section analyzes the result of increasing the number of elements per thread (EPT) a single thread (work-item) is responsible for on the performance of the execution. These different access patterns are described as `contiguous` & `strided`. They are based on the pdf @part_2_doc in the assignment description.
+This section analyzes the result of increasing the number of Elements Per Thread (EPT) a single thread (work-item) is responsible for on the performance of the execution. These different access patterns are described as `contiguous` and `strided`. They are based on the pdf @part_2_doc in the assignment description.
 
 
 == Setup
 
 The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in @part-1-add-vs-mul. Furthermore, the workgroup size is fixed at $64$ to maintain consistent results.
 
-The benchmark file is called: `part-2.cpp` and kernel file `partTwo.cl`. Included in the kernel file are the following kernels: `mul_contiguous`, `add_continguous`, `mul_strided`, `add_strided`.
+The benchmark file is called: `part-2.cpp`, and kernel file `partTwo.cl`. Included in the kernel file are the following kernels: `mul_contiguous`, `add_continguous`, `mul_strided` and `add_strided`.
 
 The `contiguous` pattern, corresponds to the example code shown in @pattern-contiguous-code.
 
@@ -198,35 +198,35 @@ The `strided` access pattern, corresponds to the example code shown in @pattern-
 
 == Visualization
 
-The impact of the Elements Per Thread (EPT) variable on the workload distribution across individual work-items is illustrated in @drawing-1.
+The impact of the EPT variable on the workload distribution across individual work-items is illustrated in @drawing-1.
 
 
 #figure(
   image(
     "images/drawings/drawings-mini-report-1.pdf",
   ),
-  caption: [Elements per thread (8) - Work Item Orchestration],
+  caption: [Elements Per Thread (8) - Work Item Orchestration],
 ) <drawing-1>
 
 
-In this specific scenario, the Elements Per Thread (EPT) is set to $8$, indicating that each individual work-item is responsible for processing eight elements from the source arrays. Consequently, the total number of work-items launched to cover the $2^22$ array size is reduced by a factor of eight, resulting in a global work size of $524,288$. Calculating the number of work groups can than be done, by dividing this number by the workgroup-size ($64$), which results in $8192$ work groups.
+In this specific scenario, the EPT is set to $8$, indicating that each individual work-item is responsible for processing eight elements from the source arrays. Consequently, the total number of work-items launched to cover the $2^22$ array size is reduced by a factor of eight, resulting in a global work size of $524,288$. Calculating the number of work groups can than be done, by dividing this number by the workgroup-size ($64$), which results in $8192$ work groups.
 
 
 
 == Contiguous vs Strided
 
-The initial analysis focuses on the execution time across both arithmetic operations, as well as the impact of the different access patterns. These relationships are illustrated in @part-2-time-vs-ept, which plots execution time as a function of the Elements Per Thread (EPT).
+The initial analysis focuses on the execution time across both arithmetic operations, as well as the impact of the different access patterns. These relationships are illustrated in @part-2-time-vs-ept, which plots execution time as a function of the EPT.
 
 
 #figure(
   image(
     "images/part-2/desktop/part_2_time_vs_ept.pdf",
   ),
-  caption: [GPU Execution Time vs EPT - mul & add operations - contiguous vs strided pattern],
+  caption: [GPU Execution Time vs EPT - multiplication & addition operations - contiguous vs strided pattern],
 ) <part-2-time-vs-ept>
 
 
-Initial observations from the chart suggest that the strided access pattern yields better performance compared to the contiguous pattern. This performance difference is further clarified in @part-2-time-covs, where a direct comparison of the two strategies reveals a significant speedup favoring the strided approach as the EPT factor increases.
+Initial observations from the chart suggest that the strided access pattern yields better performance compared to the contiguous pattern. This performance difference is further clarified in @part-2-time-covs, where a direct comparison of the two strategies reveals a significant speedup favoring the strided approach, as the EPT factor increases.
 
 
 #figure(
@@ -237,7 +237,7 @@ Initial observations from the chart suggest that the strided access pattern yiel
 ) <part-2-time-speedup-cont-vs-strided>
 
 
-The results demonstrate a performance inflection point for the strided access pattern once the EPT reaches a value of $8$. The underlying mechanism for this acceleration is can be assigned by the memory bandwidth analysis in @part-2-bandwidth-ci, which reveals a significant increase in data throughput compared to the contiguous implementation.
+The results demonstrate a performance inflection point for the strided access pattern once the EPT reaches a value of $8$. The underlying mechanism for this acceleration can be assigned by the memory bandwidth analysis in @part-2-bandwidth-ci, which reveals a significant increase in data throughput compared to the contiguous implementation.
 
 
 #figure(
@@ -248,10 +248,10 @@ The results demonstrate a performance inflection point for the strided access pa
 ) <part-2-bandwidth-ci>
 
 
-The contrast between the contiguous access pattern (left) and the strided pattern (right) is stark. A significant drop in memory bandwidth is observed for the contiguous model as the EPT increases from $8$ to $16$. Similar performance regressions occur at higher values, specifically when transitioning from $64$ to $128$ and $256$, suggesting a potential bottleneck in the access pattern or gpu limitation.
+The contrast between the contiguous access pattern (left) and the strided pattern (right) is stark. A significant drop in memory bandwidth is observed for the contiguous model as the EPT increases from $8$ to $16$. Similar performance regressions occur at higher values, specifically when transitioning from $64$ to $128$ and $256$, suggesting a potential bottleneck in the access pattern or GPU limitation.
 
 
-The following analysis examines the computational intensity of both strategies, as illustrated in @part-2-compute-ci. By comparing the arithmetic throughput across different EPT values.
+The following analysis examines the computational intensity of both strategies, as illustrated in @part-2-compute-ci, by comparing the arithmetic throughput across different EPT values.
 
 
 #figure(
@@ -261,15 +261,14 @@ The following analysis examines the computational intensity of both strategies, 
   caption: [Computational Throughput CI Intervals],
 ) <part-2-compute-ci>
 
-The data reveals a strong correlation between memory bandwidth and computational throughput; as bandwidth undergoes a sharp drop, the compute performance suffers an identical regression.
+The data reveals a strong correlation between memory bandwidth and computational throughput. As the bandwidth utilization undergoes a sharp drop, the compute performance suffers an identical regression.
 
 This synchronization confirms that the kernel is strictly memory-bound. Notably, while the contiguous and strided patterns exhibit these drops at similar thresholds, the multiplication operation displays a one-step phase shift in its performance decline compared to addition.
 
 
 == Conclusion
 
-
-In summary, the data suggests that the strided access pattern gives the GPU the data it needs to perform the computations, up until the elements per thread become to large again and the gpu is unable to saturate the bandwidth and give the gpu the data it needs to compute. At this point, the increased workload per thread likely exhausts local resources, preventing the GPU from effectively saturating the available bandwidth.
+In summary, the data suggests that the strided access patterns provides the GPU with the data it needs to perform computations, up to the point where the number of EPT becomes too high. The GPU is unable to saturate the bandwidth and give the needed data to the compute elements. At this point, the increased workload per thread likely exhausts local resources, preventing the GPU from effectively saturating the available bandwidth.
 
 Furthermore, a notable disparity exists in the confidence intervals (CI); the contiguous pattern exhibits significantly lower variance than the strided approach. No immediate answer can be given for this difference in intervals between access patterns.
 
@@ -288,7 +287,7 @@ This section will discuss the experiment to create a roofline model as described
 
 The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in @part-1-add-vs-mul. Furthermore, the workgroup size is fixed at $64$ to maintain consistent results.
 
-The benchmark file is called `part-3.cpp` and kernel file: `partThree.cl`. Included in the kernel file is a single kernel called: `float_sum_increasing_ci`. It combines the elements per thread loop with the kernel `intSumIncreasingCI`, present in the list of gpu exercises given at the start of the semester. The benchmark file, also update the formulas for calculating the bandwidth (throughput), compute intensity (flops), and arithmetic intensity with formulas from the `sumIntsIncreasingCI.cpp` file.
+The benchmark file is called: `part-3.cpp`; and kernel file: `partThree.cl`. Included in the kernel file is a single kernel called: `float_sum_increasing_ci`. It combines the elements per thread loop with the kernel `intSumIncreasingCI`, present in the list of GPU exercises (given at the start of the semester). The benchmark file also updates the formulas for calculating the bandwidth (throughput), compute intensity (flops), and arithmetic intensity with formulas from the `sumIntsIncreasingCI.cpp` file.
 
 
 
@@ -321,7 +320,7 @@ Before analyzing the roofline model, @part-3-flops-loop-count-ci illustrates how
 Increasing the EPT factor beyond a certain point ($>=32$) has a negative effect on the computational throughput.
 
 
-A corresponding analysis for effective memory bandwidth is presented in @part-3-bandwidth-loop-count-ci, where the throughput is parameterized by both the loop count and the Elements Per Thread (EPT).
+A corresponding analysis for effective memory bandwidth is presented in @part-3-bandwidth-loop-count-ci, where the throughput is parameterized by both the loop count and the EPT factor.
 
 
 #figure(
@@ -333,7 +332,7 @@ A corresponding analysis for effective memory bandwidth is presented in @part-3-
 
 The same behavior as seen in graphs in figure @part-3-all-vs-loop-count, is again visible in the above two graphs, for different loop counts. The EPT value 'only' determines the ranges of the values, but does not change the chart behavior.
 
-Increasing the EPT beyond ($>= 32$) for any loop factor also showcases a decreasing bandwidth & computational throughput. Potentially indicating that the through the smaller of threads / work-items launched the GPU cannot fully utilize its compute & bandwidth capabilities.
+Increasing the EPT beyond ($>= 32$) for any loop factor also showcases a decreasing bandwidth and computational throughput. Potentially indicating that due to the smaller number of threads / work-items launched, the GPU cannot fully utilize its compute and bandwidth capabilities.
 
 
 @part-3-model presents the Roofline Analysis,  which summaries all the plots and behavior's described earlier.
@@ -347,14 +346,14 @@ Increasing the EPT beyond ($>= 32$) for any loop factor also showcases a decreas
 ) <part-3-model>
 
 
-For the GPU in question, the memory bandwidth & peak computational throughput is indicated. The results follow the memory slope from the starting loop count (LC) $8$ until $64$, were it starts diverging. The 'ridge point' at which the actual data start becoming 'memory bound' occurs much earlier than the theoretical value.
+For the GPU in question, the memory bandwidth & peak computational throughput is indicated. The results follow the memory slope from the starting loop count (LC) $8$ until $64$, where it starts diverging. The 'ridge point' at which the actual data starts becoming 'memory bound' occurs much earlier than the theoretical value.
 
 
 
 == Conclusion
 
 
-The experiment in question, has clearly shown the appearance of the roofline model in the data, this part of the experiment can be considered a success. With small note made for the practical ridge point not matching the expected theoretical point.
+The experiment in question has clearly shown the appearance of the roofline model in the data. This part of the experiment can be considered a success, with a small remark made for the practical ridge point not matching the expected theoretical point.
 
 
 
@@ -372,7 +371,7 @@ This section evaluates the sensitivity of the Compute Intensity (CI) kernel from
 == Setup
 
 
-The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in section @part-1-add-vs-mul. The benchmark file is called `part-3-2.cpp` and kernel file: `partThree.cl`. The same kernel as in section @part-3-roofline-model is reused.
+The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in section @part-1-add-vs-mul. The benchmark file is called: `part-3-2.cpp`, and kernel file: `partThree.cl`. The same kernel as in section @part-3-roofline-model is reused.
 
 
 == Analysis
@@ -388,7 +387,7 @@ The array size is standardized at $2^22$ elements, a value derived from the benc
 ) <part-3-2-ridgeline-time>
 
 
-The ridge line analysis in @part-3-2-ridgeline-time, indicates that the most optimal range of WGZ for the kernel in part 3, is between $32-256$.  This validates the choice to fix the WGZ to $64$ across the benchmarks in part 1, 2, 3 & 4.
+The ridge line analysis in @part-3-2-ridgeline-time indicates that the most optimal range of WGZ for the kernel in part 3 is between $32-256$.  This validates the choice to fix the WGZ to $64$ across the benchmarks in part 1, 2, 3 & 4.
 
 
 Completing this section with an additional roofline model chart as illustrated in @part-3-2-model. The distribution of the charts for the different workgroup-size values is clearly visible.
@@ -419,7 +418,7 @@ This section will discuss the performance difference between the use of local & 
 
 The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in @part-1-add-vs-mul. Furthermore, the workgroup size is fixed at $64$ to maintain consistent results.
 
-The benchmark file is called: `part-4.cpp` and kernel file: `partFour.cl`. Included in the kernel file are two separate kernels: `add_reduction_global` and `add_reduction_local`. These kernels were taken from the exercise set. No modification where made to the kernels. The benchmarking file was modified to incorporate changes required for executing the benchmarks. Such modification include; create src array based on array size, rewrite the src buffer on each gpu kernel run and other changes to fit into the benchmark harness.
+The benchmark file is called: `part-4.cpp`, and kernel file: `partFour.cl`. Included in the kernel file are two separate kernels: `add_reduction_global` and `add_reduction_local`. These kernels were taken from the exercise set. No modification were made to the kernels. The benchmarking file was modified to incorporate changes required for executing the benchmarks. Such modifications include; create src array based on array size, rewrite the src buffer on each GPU kernel run and other changes to fit into the benchmark harness.
 
 
 
@@ -441,7 +440,7 @@ Looking at the execution time on the right chart, it can be noticed that the exe
 
 This reduction in execution time is reflected when looking at the memory bandwidth (middle) and compute throughput (left) charts. In both cases, the compute throughput and memory bandwidth are higher on larger array sizes and start widening from array size $2^20$.
 
-Due notice that the behavior of the bandwidth & compute metric between both memory strategies follow a similar trend on larger size, but the global strategy does not reach the same peaks as the local strategy.
+It should be noted that the behavior of the bandwidth & compute metric between both memory strategies follows a similar trend on larger array sizes. The global strategy does not reach the same peaks as the local strategy.
 
 
 Plotting the execution time of both patterns against each other as illustrated in @part-4-time-speedup.
@@ -454,7 +453,7 @@ Plotting the execution time of both patterns against each other as illustrated i
   caption: [Local vs Global Speedup],
 ) <part-4-time-speedup>
 
-This speedup alluded to earlier, is clearly visible starting from the array size $2^18$ and propagates until the end of the benchmarked array sizes. The peak speedup is measured to be around $times ~1.2$, and with array size $2^23$.
+The speedup alluded to earlier, is clearly visible starting from the array size $2^18$ and propagates until the end of the benchmarked array sizes. The peak speedup is measured to be around $times ~1.2$, and with array size $2^23$.
 
 
 == Conclusion
