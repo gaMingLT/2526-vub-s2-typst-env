@@ -16,7 +16,7 @@
 #show: ilm.with(
   title: [Mini-Project],
   authors: "Milan Lagae",
-  date: datetime(year: 2026, month: 03, day: 29),
+  date: datetime(year: 2026, month: 03, day: 28),
 
   bibliography: bibliography("references.bib"),
   table-of-contents: outline(depth: 2),
