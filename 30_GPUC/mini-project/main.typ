@@ -88,7 +88,7 @@ Included in the zip file is a `src` folder. This folder contains a `project-desk
 
 = Methodology
 
-A total of *20* runs were performed for each parameter combination.The first 5 runs where discarded to allow the system to stabilize. This is in accordance to the recommendations in @number_of_runs. For each measured value, if applicable a CoV range chart is produced and will be referenced, these can be found in @appendix. The acceptable range of the CoV is taken from @paae_cov_range. The Cov charts for each part, can be found in the appendix section @appendix. All benchmarks where executed on the system while the least amount of other programs were running at the same moment of performing the benchmarks.
+A total of *20* runs were performed for each parameter combination.The first 5 runs where discarded to allow the system to stabilize. This is in accordance with the recommendations in @number_of_runs. For each measured value, if applicable a CoV range chart is produced and will be referenced, these can be found in @appendix. The acceptable range of the CoV is taken from @paae_cov_range. All benchmarks where executed on the system while the least amount of other programs were running at the same moment of performing the benchmarks.
 
 
 // #pagebreak()
@@ -171,7 +171,7 @@ The benchmarks reveal no significant performance difference between addition and
 
 // #pagebreak()
 
-// #colbreak()
+#colbreak()
 = Part 2: Elements Per Thread
 
 This section analyzes the result of increasing the number of elements per thread (EPT) a single thread (work-item) is responsible for on the performance of the execution. These different access patterns are described as `contiguous` & `strided`. They are based on the pdf @part_2_doc in the assignment description.
@@ -300,8 +300,8 @@ Furthermore, a notable disparity exists in the confidence intervals (CI); the co
 
 
 // #pagebreak()
-// #colbreak()
-= Part 3: Roofline Model
+#colbreak()
+= Part 3: Roofline Model <part-3-roofline-model>
 
 
 This section will discuss the experiment to create a roofline model as described in the assignment & discussed in the lectures. Before showcasing the roofline model, several other charts will be discussed first, showcasing the utility of the roofline model.
@@ -397,9 +397,19 @@ The experiment in question, has clearly shown the appearance of the roofline mod
 #colbreak()
 = Part 3.2: Workgroup Size
 
+
 This section evaluates the sensitivity of the Compute Intensity (CI) kernel from part 3, to variations in workgroup size.
 
-Figure @part-3-2-ridgeline-time provides a multi-dimensional analysis of execution time, utilizing a ridge line #footnote[https://www.data-to-viz.com/graph/ridgeline.html] visualization to map performance distributions across a range of Loop Counts (LC) and Elements Per Thread (EPT) values.
+
+== Setup
+
+
+The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in section @part-1-add-vs-mul. The benchmark file is called `part-3-2.cpp` and kernel file: `partThree.cl`. The same kernel as in section @part-3-roofline-model is reused.
+
+
+== Analysis
+
+@part-3-2-ridgeline-time provides a multi-dimensional analysis of execution time, utilizing a ridge line #footnote[https://www.data-to-viz.com/graph/ridgeline.html] visualization to map performance distributions across a range of Loop Counts (LC) and Elements Per Thread (EPT) values.
 
 
 #figure(
@@ -410,10 +420,10 @@ Figure @part-3-2-ridgeline-time provides a multi-dimensional analysis of executi
 ) <part-3-2-ridgeline-time>
 
 
-The ridge line analysis in @part-3-2-ridgeline-time, is that the most optimal range of WGZ for the kernel in part 3, is between $32-256$.  This validates the choice to fix the WGZ to $64$ across the benchmarks in part 1, 2 & 3.
+The ridge line analysis in @part-3-2-ridgeline-time, indicates that the most optimal range of WGZ for the kernel in part 3, is between $32-256$.  This validates the choice to fix the WGZ to $64$ across the benchmarks in part 1, 2, 3 & 4.
 
 
-Completing this section with an additional roofline model chart as illustrated in figure @part-3-2-model. The distribution of the charts for the different workgroup-size values is clearly visible.
+Completing this section with an additional roofline model chart as illustrated in @part-3-2-model. The distribution of the charts for the different workgroup-size values is clearly visible.
 
 
 #figure(
@@ -425,20 +435,28 @@ Completing this section with an additional roofline model chart as illustrated i
 
 
 
+
 // #pagebreak()
 = Part 4: Local vs Global
 
-// TODO: Update
-This section will discuss the usage of local memory before performing operations on elements in an array.
+
+This section will discuss the performance difference between the use of local & global memory for a reduction kernel.
+
 
 == Setup
 
-// TODO: *TODO*
+
+The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in section @part-1-add-vs-mul. Furthermore, the workgroup size is fixed at $64$ to maintain consistent results.
+
+The benchmark file is called: `part-4.cpp` and kernel file: `partFour.cl`. Included in the kernel file are two separate kernels: `add_reduction_global` and `add_reduction_local`. These kernels were taken from the exercise set. No modification where made to the kernels. The benchmarking file was modified to incorporate changes required for executing the benchmarks. Such modification include; create src array based on array size, rewrite the src buffer on each gpu kernel run and other changes to fit into the benchmark harness.
+
+
 
 == Analysis
 
 // TODO: *TODO*
 
+// TODO: Update benchmark image, text is clipping
 #figure(
   image(
     "images/part-4/desktop/part_4_compare_all_ci.pdf",
