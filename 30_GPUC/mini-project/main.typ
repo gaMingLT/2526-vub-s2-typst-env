@@ -51,19 +51,19 @@ The first section involves a direct comparison between addition and multiplicati
 
 Following the comparison in the first part, the kernels are modified to execute on multiple elements simultaneously in two different one-to-many mapping's schemes @part_2_doc.
 
-For the third section, the compute intensity of the benchmark are parameterized by using a loop count factor. Increasing the compute intensity should surface the limitation of the memory & compute of the gpu.
+For the third section, the compute intensity of the benchmark are parameterized by using a loop count factor. Increasing the compute intensity should surface the limitation of the memory & compute of the GPU.
 
 The final section will compare the trade-offs between local vs global memory on the performance of the execution, as indicated in the schema @part_4_scheme  in the assignment.
 
 
 = Structure
 
-A `src` folder is included in the zip file. Which folder contains a `project-desktop` folder, the kernel files and the CMake project file. The `src` folder contains all the `c++` files responsible for orchestrating the benchmark execution. The following list of kernels are included: `partOne`, `partTwo`, `partThree`, `partThree-2` and `partFour`.
+A `src` folder is included in the zip file. This folder contains a `project-desktop` folder, the kernel files and the CMake project file. The `src` folder contains all the `c++` files responsible for orchestrating the benchmark execution. The following list of kernels are included: `partOne`, `partTwo`, `partThree`, `partThree-2` and `partFour`.
 
 
 = Methodology
 
-A total of *20* runs were performed for each parameter combination.The first 5 runs were discarded to allow the system to stabilize. This is in accordance with the recommendations in @number_of_runs. For each measured value, if applicable, a CoV range chart is produced and will be referenced. These can be found in @appendix. The acceptable range of the CoV is taken from @paae_cov_range.
+A total of *20* runs were performed for each parameter combination. The first 5 runs were discarded to allow the system to stabilize. This is in accordance with the recommendations in @number_of_runs. For each measured value, if applicable, a CoV range chart is produced and will be referenced. These can be found in @appendix. The acceptable range of the CoV is taken from @paae_cov_range.
 
 
 #pagebreak()
@@ -112,7 +112,7 @@ To provide a more robust basis for these conclusions, the arithmetic throughput 
   caption: [Compute Throughput vs Array Size],
 ) <part-1-compute-throughput-vs-array-size>
 
-The trends observed in @part-1-compute-throughput-vs-array-size mirror those in @part-1-memory-bandwidth-vs-array-size. A primary conclusion derived from these figures is that the current kernel implementation is memory-bound, as performance scales in direct correlation with memory bandwidth utilization rather than raw computational capacity.
+The trends observed in @part-1-compute-throughput-vs-array-size mirror those in @part-1-memory-bandwidth-vs-array-size. A primary conclusion derived from these figures is that the current kernel implementation is memory-bound, as performance scales in direct correlation with memory bandwidth utilization, rather than raw computational capacity.
 
 #figure(
   image(
@@ -150,7 +150,7 @@ The benchmarks reveal no significant performance difference between addition and
 
 = Part 2: Elements Per Thread
 
-This section analyzes the result of increasing the number of Elements Per Thread (EPT) a single thread (work-item) is responsible for on the performance of the execution. These different access patterns are described as `contiguous` and `strided`. They are based on the pdf @part_2_doc in the assignment description.
+This section analyzes the result of increasing the number of Elements Per Thread (EPT); a single thread (work-item) is responsible for on the performance of the execution. These different access patterns are described as `contiguous` and `strided`. They are based on the pdf @part_2_doc in the assignment description.
 
 
 == Setup
@@ -268,7 +268,7 @@ This synchronization confirms that the kernel is strictly memory-bound. Notably,
 
 == Conclusion
 
-In summary, the data suggests that the strided access patterns provides the GPU with the data it needs to perform computations, up to the point where the number of EPT becomes too high. The GPU is unable to saturate the bandwidth and give the needed data to the compute elements. At this point, the increased workload per thread likely exhausts local resources, preventing the GPU from effectively saturating the available bandwidth.
+In summary, the data suggests that the strided access patterns provides the GPU with the data it needs to perform computations, up to the point where the number of EPT becomes too high. The GPU is unable to saturate the bandwidth and provide the needed data to the compute elements. At this point, the increased workload per thread likely exhausts local resources, preventing the GPU from effectively saturating the available bandwidth.
 
 Furthermore, a notable disparity exists in the confidence intervals (CI); the contiguous pattern exhibits significantly lower variance than the strided approach. No immediate answer can be given for this difference in intervals between access patterns.
 
@@ -287,7 +287,7 @@ This section will discuss the experiment to create a roofline model as described
 
 The array size is standardized at $2^22$ elements, a value derived from the benchmark results observed in @part-1-add-vs-mul. Furthermore, the workgroup size is fixed at $64$ to maintain consistent results.
 
-The benchmark file is called: `part-3.cpp`; and kernel file: `partThree.cl`. Included in the kernel file is a single kernel called: `float_sum_increasing_ci`. It combines the elements per thread loop with the kernel `intSumIncreasingCI`, present in the list of GPU exercises (given at the start of the semester). The benchmark file also updates the formulas for calculating the bandwidth (throughput), compute intensity (flops), and arithmetic intensity with formulas from the `sumIntsIncreasingCI.cpp` file.
+The benchmark file is called: `part-3.cpp`, and kernel file: `partThree.cl`. Included in the kernel file is a single kernel called: `float_sum_increasing_ci`. It combines the elements per thread loop with the kernel `intSumIncreasingCI`, present in the list of GPU exercises (given at the start of the semester). The benchmark file also updates the formulas for calculating the bandwidth (throughput), compute intensity (flops), and arithmetic intensity with formulas from the `sumIntsIncreasingCI.cpp` file.
 
 
 
@@ -335,7 +335,7 @@ The same behavior as seen in graphs in figure @part-3-all-vs-loop-count, is agai
 Increasing the EPT beyond ($>= 32$) for any loop factor also showcases a decreasing bandwidth and computational throughput. Potentially indicating that due to the smaller number of threads / work-items launched, the GPU cannot fully utilize its compute and bandwidth capabilities.
 
 
-@part-3-model presents the Roofline Analysis,  which summaries all the plots and behavior's described earlier.
+@part-3-model presents the Roofline Analysis, which summarizes all the plots and behaviors described earlier.
 
 
 #figure(
@@ -346,7 +346,7 @@ Increasing the EPT beyond ($>= 32$) for any loop factor also showcases a decreas
 ) <part-3-model>
 
 
-For the GPU in question, the memory bandwidth & peak computational throughput is indicated. The results follow the memory slope from the starting loop count (LC) $8$ until $64$, where it starts diverging. The 'ridge point' at which the actual data starts becoming 'memory bound' occurs much earlier than the theoretical value.
+For the GPU in question, the memory bandwidth & peak computational throughput is indicated. The results follow the memory slope from the starting loop count (LC) $8$ until $64$, where it starts diverging. The 'ridge point', at which the actual data starts becoming 'memory bound', occurs much earlier than the theoretical value.
 
 
 
@@ -509,6 +509,12 @@ Thus, the compute size should be taking into account when deciding which pattern
   caption: [Desktop Specifications],
 ) <desktop>
 
+#figure(
+  image(
+    "images/specs/GPU-opencl-info.png",
+  ),
+  caption: [Desktop RTX3070 Device Query],
+) <desktop-device-query>
 
 // === MacBook
 
