@@ -61,7 +61,8 @@
 )
 
 
-#outline()
+#outline(depth: 2)
+
 
 // Modify the heading spacing above and below!
 #show heading.where(): set block(above: 1em, below: 0.75em)
@@ -359,18 +360,6 @@ The same behavior as seen in graphs in figure @part-3-all-vs-loop-count, is agai
 Increasing the EPT beyond ($>= 32$) for any loop factor also showcases a decreasing bandwidth & computational throughput. Potentially indicating that the through the smaller of threads / work-items launched the GPU cannot fully utilize its compute & bandwidth capabilities.
 
 
-
-// Plotting the arithmetic intensity, in function of the loop count as shown in @part-3-ai-vs-loop-count-ci.
-
-
-// #figure(
-//   image(
-//     "images/part-3/desktop/part_3_ai_vs_loop_count_ci.pdf",
-//   ),
-//   caption: [],
-// ) <part-3-ai-vs-loop-count-ci>
-
-
 @part-3-model presents the Roofline Analysis,  which summaries all the plots and behavior's described earlier.
 
 
@@ -437,6 +426,8 @@ Completing this section with an additional roofline model chart as illustrated i
 
 
 // #pagebreak()
+
+#colbreak()
 = Part 4: Local vs Global
 
 
@@ -454,31 +445,45 @@ The benchmark file is called: `part-4.cpp` and kernel file: `partFour.cl`. Inclu
 
 == Analysis
 
-// TODO: *TODO*
+
+@part-4-compare-all-ci illustrates the difference between local & global memory pattern and three key indicators: compute intensity, memory bandwidth, and total execution time.
+
 
 // TODO: Update benchmark image, text is clipping
 #figure(
   image(
     "images/part-4/desktop/part_4_compare_all_ci.pdf",
   ),
-  caption: [],
+  caption: [Global vs Local - GPU Time, Compute & Memory Bandwidth],
 ) <part-4-compare-all-ci>
 
 
-// TODO: *TODO*
+Looking at the execution time on the right chart, it can be noticed that the execution time for the local memory pattern is slightly slower compared to the global pattern on larger sizes. The patterns start diverging with small amounts from array size $>= 2^20$.
 
+This reduction in execution time is reflected when looking at the memory bandwidth (middle) and compute throughput (left) charts. In both cases, the compute throughput and memory bandwidth are higher on larger array sizes and start widening from array size $2^20$.
+
+Due notice that the behavior of the bandwidth & compute metric between both memory strategies follow a similar trend on larger size, but the global strategy does not reach the same peaks as the local strategy.
+
+
+Plotting the execution time of both patterns against each other as illustrated in @part-4-time-speedup.
+
+
+// TODO: Fix chart - wrong title!
 #figure(
   image(
     "images/part-4/desktop/part_4_time_speedup.pdf",
   ),
-  caption: [],
+  caption: [Local vs Global Speedup],
 ) <part-4-time-speedup>
+
+This speedup alluded to earlier, is clearly visible starting from the array size $2^18$ and propagates until the end of the benchmarked array sizes. The peak speedup is measured to be around $times ~1.2$, and with array size $2^23$.
 
 
 == Conclusion
 
+To summarize the observations, the local memory pattern has clear benefits in utilization of the GPU on larger array sizes. The available bandwidth & memory utilization is greater when compared to the global pattern. For smaller array sizes, there is not discernible speedup, as shown in @part-4-time-speedup.
 
-
+Thus, the compute size should be taking into account when deciding which pattern to use. Further experimentation with improved kernels (as presented in exercise set) is warranted to further analyze local memory behavior.
 
 
 
