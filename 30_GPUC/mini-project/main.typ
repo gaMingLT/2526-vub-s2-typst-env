@@ -58,7 +58,7 @@ The final section will compare the trade-offs between local vs global memory on 
 
 = Structure
 
-A `src` folder is included in the zip file. This folder contains a `project-desktop` folder, the kernel files and the CMake project file. The `src` folder contains all the `c++` files responsible for orchestrating the benchmark execution. The following list of kernels are included: `partOne`, `partTwo`, `partThree`, `partThree-2` and `partFour`.
+A `src` folder is included in the zip file. This folder contains a `project-desktop` folder, the kernel files and the CMake project file. The `src` folder contains all the `c++` files responsible for orchestrating the benchmark execution. The following list of kernels are included: `partOne`, `partTwo`, `partThree`, `partThree-2` and `partFour`. Device specifications can be found in @desktop-device-query. Microbenchmarks utilizing MicroBenchV2 application in @desktop-microbenchmark-1 and @desktop-microbenchmark-2.
 
 
 = Methodology
