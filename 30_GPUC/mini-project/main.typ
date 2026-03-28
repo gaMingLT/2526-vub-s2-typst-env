@@ -1,4 +1,6 @@
-#import "@preview/clean-acmart:0.0.1": acmart, acmart-ccs, acmart-keywords, acmart-ref, to-string
+// #import "@preview/clean-acmart:0.0.1": acmart, acmart-ccs, acmart-keywords, acmart-ref, to-string
+#import "@preview/ilm:2.0.0": *
+
 
 // Code Blocks
 #import "@preview/zebraw:0.5.2": *
@@ -8,69 +10,42 @@
 
 #let cuhk = super(sym.suit.spade)
 
-#let title = [
-  Project: Mini-Project
-]
+#import "@preview/ilm:2.0.0": *
 
-#let authors = (
-  // You can use grouped affiliations with mark
-  (
-    name: [Milan Lagae],
-    email: [],
-    mark: [],
+#set text(lang: "en")
+
+#show: ilm.with(
+  title: [GPU Computing - Mini-Project],
+  authors: "Milan Lagae",
+  date: datetime(year: 2026, month: 03, day: 29),
+
+  bibliography: bibliography("references.bib"),
+  table-of-contents: outline(depth: 2),
+
+
+  figure-index: (enabled: false),
+  table-index: (enabled: false),
+  listing-index: (enabled: false),
+
+  chapter-pagebreak: false,
+
+  affiliations: (
+    university: "Vrije Universiteit Brussel",
+    faculty: "Sciences and Bioengineering Sciences",
+    course: "GPU Computing",
   ),
 )
 
-#let affiliations = (
-  (
-    name: [Institution/University Name:],
-    faculty: [Faculty:],
-    course: [Course:],
-  ),
-  (
-    name: [Vrije Universiteit Brussel],
-    faculty: [Sciences and Bioengineering Sciences],
-    course: [GPU Computing],
-  ),
-)
-
-#let conference = (
-  name: [],
-  short: [],
-  year: [],
-  date: [],
-  venue: [],
-)
-
-
-#let doi = "/"
-
-
-
-#show: acmart.with(
-  title: title,
-  authors: authors,
-  affiliations: affiliations,
-  conference: conference,
-  doi: doi,
-  copyright: "",
-  // isbn: "",
-  // price: "",
-  // Font Size as described by the assignment
-  font-size: 12pt,
-)
-
-
-#outline(depth: 2)
-
-
+// Template defaults where already pretty high, just increased the more
+// Currently set for the ilm template
 // Modify the heading spacing above and below!
-#show heading.where(): set block(above: 1em, below: 0.75em)
+#show heading.where(): set block(above: 1.5em, below: 0.90em)
 
 // Modify the spacing above a figure (codeblock), so the language annotation does not conflict with text.
-#show figure.where(): set block(above: 1em, below: 0.50em)
+#show figure.where(): set block(above: 2em, below: 1em)
 
-#colbreak()
+
+// #colbreak()
 = Intro
 
 The first section involves a direct comparison between addition and multiplication operations to establish a baseline, as specified in assignment descriptions.
@@ -92,7 +67,7 @@ Included in the zip file is a `src` folder. This folder contains a `project-desk
 A total of *20* runs were performed for each parameter combination.The first 5 runs where discarded to allow the system to stabilize. This is in accordance with the recommendations in @number_of_runs. For each measured value, if applicable a CoV range chart is produced and will be referenced, these can be found in @appendix. The acceptable range of the CoV is taken from @paae_cov_range. All benchmarks where executed on the system while the least amount of other programs were running at the same moment of performing the benchmarks.
 
 
-// #pagebreak()
+#pagebreak()
 = Part 1: Addition vs Multiplication <part-1-add-vs-mul>
 
 This section evaluates the performance differential between addition and multiplication operations. Furthermore, it quantifies the overall GPU acceleration relative to a CPU baseline to determine the magnitude of the observed speedup
@@ -170,9 +145,10 @@ The benchmarks reveal no significant performance difference between addition and
 
 
 
-// #pagebreak()
+#pagebreak()
 
-#colbreak()
+// #colbreak()
+
 = Part 2: Elements Per Thread
 
 This section analyzes the result of increasing the number of elements per thread (EPT) a single thread (work-item) is responsible for on the performance of the execution. These different access patterns are described as `contiguous` & `strided`. They are based on the pdf @part_2_doc in the assignment description.
@@ -300,8 +276,9 @@ Furthermore, a notable disparity exists in the confidence intervals (CI); the co
 
 
 
-// #pagebreak()
-#colbreak()
+#pagebreak()
+// #colbreak()
+
 = Part 3: Roofline Model <part-3-roofline-model>
 
 
@@ -383,7 +360,10 @@ The experiment in question, has clearly shown the appearance of the roofline mod
 
 
 
-#colbreak()
+// #colbreak()
+
+#pagebreak()
+
 = Part 3.2: Workgroup Size
 
 
@@ -425,9 +405,10 @@ Completing this section with an additional roofline model chart as illustrated i
 
 
 
-// #pagebreak()
+#pagebreak()
 
-#colbreak()
+// #colbreak()
+
 = Part 4: Local vs Global
 
 
@@ -488,8 +469,9 @@ Thus, the compute size should be taking into account when deciding which pattern
 
 
 
-// TODO: Update figure captions!
-#set page(columns: 1)
+// #set page(columns: 1)
+
+
 = Appendix <appendix>
 
 == Microbenchmark
@@ -668,4 +650,4 @@ Thus, the compute size should be taking into account when deciding which pattern
 ) <part-4-gflops-covs>
 
 
-#bibliography("references.bib")
+// #bibliography("references.bib")
