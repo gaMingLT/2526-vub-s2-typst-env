@@ -18,7 +18,7 @@
   authors: "Milan Lagae",
   date: datetime(year: 2026, month: 05, day: 10),
 
-  bibliography: bibliography("references.bib"),
+  // bibliography: bibliography("references.bib"),
   table-of-contents: outline(depth: 2),
 
 
@@ -231,4 +231,4 @@ The measured NCU metric is illustrated in the graphs @wrapper-old-size-vs-ncu an
   ) <wrapper-new-size-vs-ncu>
 ]
 
-The additional information gathered in the collect phase, again illustrates it usefulness show in @wrapper-new-size-vs-ncu. Plotting using the new information has it limits, when increasing the size & number of run variables, the information becomes to much to be properly displayed on the x-axis & inside of the legend of the chart.
+The additional information gathered in the collect phase, again illustrates it usefulness in @wrapper-new-size-vs-ncu. Plotting using the new information has it limits, when increasing the size & number of run variables, the information becomes to much to be properly displayed on the x-axis & inside of the legend of the chart.
