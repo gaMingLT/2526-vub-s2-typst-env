@@ -212,7 +212,6 @@ Furthermore, the computational throughput of the matrix multiplication kernel ca
 
 Using the existing information gathered during the collect phase, the throughput vs the matrix A width is graphed in @base-old-size-vs-throughput, but again some information is lost. For this reason, using the additional metric fields added in the collect phase, the information is illustrated in @base-new-size-vs-throughput.
 
-
 == Wrapper
 
 The default metric included in the wrapper for analysis is: `smsp__sass_l1tex_tags_mem_global`. Using the command `ncu --query-metrics --metrics smsp__sass_l1tex_tags_mem_global` the description of this metric can be queried.
@@ -252,3 +251,38 @@ The measured NCU metric is illustrated in the graphs @wrapper-old-size-vs-ncu an
 ]
 
 The additional information gathered in the collect phase, again illustrates it usefulness in @wrapper-new-size-vs-ncu. Plotting using the new information has it limits. When increasing the size & number of run variables, the information becomes too much to be properly displayed on the x-axis & inside of the legend of the chart.
+
+
+== Pretty
+
+Using the `pretty` value on the campaign the graphs can be improved again. The figures can be seen in @pretty-base-1 & @pretty-base-2.
+
+#grid(
+  columns: (1fr, 1fr)
+)[
+  #figure(
+    image("images/base/pretty-base-size-vs-time.pdf"),
+    caption: [Pretty - Matrix A Size vs Time],
+  ) <pretty-base-1>
+][
+  #figure(
+    image("images/base/pretty-base-size-vs-throughtput.pdf"),
+    caption: [Pretty - Matrix A Size vs Throughput],
+  ) <pretty-base-2>
+]
+
+And for the `ncu` wrapper with measured metric in @pretty-wrapper-1 & @pretty-wrapper-2.
+
+#grid(
+  columns: (1fr, 1fr)
+)[
+  #figure(
+    image("images/wrapper/pretty-wrapper-01.pdf"),
+    caption: [Pretty - Matrix A Size vs NCU Metric],
+  ) <pretty-wrapper-1>
+][
+  #figure(
+    image("images/wrapper/pretty-wrapper-02.pdf"),
+    caption: [Pretty - Matrix A Size vs NCU Metric],
+  ) <pretty-wrapper-2>
+]
