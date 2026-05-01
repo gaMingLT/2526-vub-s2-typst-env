@@ -49,42 +49,62 @@
 // #colbreak()
 = Intro
 
-The benchmark chosen for porting to the updated Benchkit V2 campaign API is the `cuda_samples_matmul`. To start, context of the chosen benchmark will be discussed in @context. Modifications made will be discussed in @bench, with use of a command wrapper in @command-wrapper. Discussion of benchmark results will be done in @analysis.
+The benchmark chosen for porting to the updated Benchkit V2 campaign API is the `cuda_samples_matmul`. To start, context of the chosen benchmark will be discussed in @context. Modifications made will be discussed in @bench, and use of a the `ncu` command wrapper in @command-wrapper. Discussion of benchmark results will be done in @analysis.
 
 
 = Context <context>
 
+The chosen benchmark to port to the updated API is `cuda_matmul`. The benchmark measures the performance of matrix multiplication on Nvidia GPU's. Matrix multiplication are regularly used to compare the performance of different (Nvidia) GPU's. 
 
-// Rewrite
-It is a matrix multiplication microbenchmark for testing the performance of performing matrix multiplication on a GPU's. It is tailored to test the performance of GPU's.
+The benchmark takes the dimensions of the 2 matrixes that have to be multiplied as input parameters.
 
-Specified in the benchmark variables are the dimensions of the matrix that are to multiplied with each other.
 
-// Explaining parameters?
+// More?
 
 
 
 #pagebreak()
 = Bench <bench>
 
-This section will briefly discuss the updated benchmark implementation;
+This section will briefly discuss the changes made to the benchmark implementation.
+
 
 == Fetch
 
-The fetch stage of the benchmark has been updated with cloning the completely example repository list in the original benchmarks documentation.
+The fetch stage of the benchmark has been updated to clone the repository containing the benchmark code. The repository is cloned into it's own directory.
+
 
 == Build
 
-The build stage is specially tailored to compiling and building the `matrixMul.cu` kernel at the moment. The `cmake` & `make` commands are sequentially executed for compiling said example.
+The build stage of the benchmark is currently setup to only build the `matrixMul.cu` kernel. The `cmake` & `make` commands are sequentially executed.  First the `build` directory is created in the folder:  `/Samples/0_Introduction/matrixMul/`. 
+
+Inside of the `/Samples/0_Introduction/matrixMul/build` folder, the `cmake` command is executed.  Lastly, the `make` command is executed in the  `/Samples/0_Introduction/matrixMul/build` folder
+
 
 == Run
 
-This stage executes a single program execution, existing bench code has been reused.
+This stage executes a single `matrixMul` Cuda kernel. Existing code has been reused and updated. The command in @run-command is executed, note that the `ma_width` is reused twice, this to ensure that both matrices can be multiplied with each other.
+
+#figure(
+  zebraw(
+    lang: false,
+    ```python
+    run_command = [
+        "./matrixMul",
+        f"-wA={ma_width}",
+        f"-hA={ma_height}",
+        f"-wB={mb_width}",
+        f"-hB={ma_width}",
+    ]
+    ```,
+  ),
+  caption: [Run - Command],
+) <run-command>
 
 
 == Collect
 
-The existing collect has been slightly modified. The original collect phase code has been kept as is. The updated modification, is the addition of 3 new metric fields, as follows:
+The existing collect has been slightly modified. The original collect phase code has been reused. The updated modification, is the addition of 3 new metric fields, as follows:
 - dim_a: Matrix A dimensions.
 - dim_b: Matrix B dimensions.
 - dim_a_x_dim_b: Matrix A & B dimensions combined.
@@ -94,7 +114,7 @@ The existing collect has been slightly modified. The original collect phase code
 
 The chosen wrapper for the updated benchmark is the `ncu2.py` wrapper, which is the cli version of NVIDIA Nsight Compute #footnote[https://developer.nvidia.com/nsight-compute].
 
-Using the GPU's hardware performance counters, more information from the execute kernel can be gained.
+By using the GPU's hardware performance counters, more information from the execute kernel can be gained.
 
 
 #pagebreak()
@@ -105,7 +125,7 @@ This section will discuss analyzing the results of executing the updated benchma
 
 == Platform
 
-Due to platform availability the benchmarks were executed on a Ubuntu 22.04 WSL image on Windows 11. More information can be found in @desktop.
+Due to platform availability, the benchmarks were executed on a Ubuntu 22.04 WSL image on Windows 11. More information can be found in @desktop.
 
 #figure(
   table(
@@ -147,9 +167,9 @@ The run variables used in the benchmark can be found in @base-run-variables.
   zebraw(
     lang: false,
     ```python
-        "ma_width": [32, 64, 128],
-        "ma_height": [32, 64, 128],
-        "mb_width": [32, 64, 128],
+    "ma_width": [32, 64, 128],
+    "ma_height": [32, 64, 128],
+    "mb_width": [32, 64, 128],
     ```,
   ),
   caption: [Base - Run Variables],
@@ -172,7 +192,7 @@ The matrix A size vs execution time is charted in the figures @base-old-size-vs-
   ) <base-new-size-vs-time>
 ]
 
-While @base-new-size-vs-time, gives a general idea of how the execution time rises with Matrix A Width. The information of the dimension of both matrixes are lost. For this reason the additional metric fields in the collect phase have been added. The updated chart with these additional fields are shown in @base-old-size-vs-time.
+While @base-new-size-vs-time gives a general idea of how the execution time rises with Matrix A Width, the information of the dimension of both matrixes are lost. For this reason the additional metric fields in the collect phase have been added. The updated chart with these additional fields are shown in @base-old-size-vs-time.
 
 Furthermore, the computational throughput of the matrix multiplication kernel can be charted as seen in @base-old-size-vs-throughput and @base-new-size-vs-throughput.
 
@@ -195,8 +215,8 @@ Using the existing information gathered during the collect phase, the throughput
 
 == Wrapper
 
-The default metric included in the wrapper for analysis is: `smsp__sass_l1tex_tags_mem_global`. Using the command: `ncu --query-metrics --metrics smsp__sass_l1tex_tags_mem_global` the description of this metric can be queried.
-The description reads as follows: "\# of L1 cache tag lookups generated by global memory instructions"
+The default metric included in the wrapper for analysis is: `smsp__sass_l1tex_tags_mem_global`. Using the command `ncu --query-metrics --metrics smsp__sass_l1tex_tags_mem_global` the description of this metric can be queried.
+The description reads as follows: "\# of L1 cache tag lookups generated by global memory instructions".
 
 
 === Graphs
@@ -207,9 +227,9 @@ The run variables used in the benchmark can be found in @wrapper-run-variables.
   zebraw(
     lang: false,
     ```python
-        "ma_width": [32, 64, 128],
-        "ma_height": [32, 64, 128],
-        "mb_width": [32, 64, 128],
+    "ma_width": [32, 64, 128],
+    "ma_height": [32, 64, 128],
+    "mb_width": [32, 64, 128],
     ```,
   ),
   caption: [Wrapper - Run Variables],
@@ -231,4 +251,4 @@ The measured NCU metric is illustrated in the graphs @wrapper-old-size-vs-ncu an
   ) <wrapper-new-size-vs-ncu>
 ]
 
-The additional information gathered in the collect phase, again illustrates it usefulness in @wrapper-new-size-vs-ncu. Plotting using the new information has it limits, when increasing the size & number of run variables, the information becomes to much to be properly displayed on the x-axis & inside of the legend of the chart.
+The additional information gathered in the collect phase, again illustrates it usefulness in @wrapper-new-size-vs-ncu. Plotting using the new information has it limits. When increasing the size & number of run variables, the information becomes too much to be properly displayed on the x-axis & inside of the legend of the chart.
