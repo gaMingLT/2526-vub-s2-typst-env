@@ -46,3 +46,44 @@
 
 // #colbreak()
 = Intro
+
+// Explain structure of report
+
+
+
+= Improvement 1: Lock Contention
+
+// Explain the lock contention with random
+
+
+= Improvement 2: Inlining 
+
+// Explain the practice of inlining the `vec3*` operations
+
+
+= Improvement 3: Thread Pooling
+
+// Explain the process of adding a thread pool to better share the workload during rendering
+
+
+= Improvement 4: Parallel Build
+
+// Explain the process of multi threaded `bvh_build`
+
+
+= Improvement 5: Structure of Arrays & SIMD
+
+// Explain the process of SoA & SIMD
+
+
+= Miscellaneous improvements
+
+// List of miscellaneous  (minor) improvements
+
+
+
+= Benchmarking
+
+
+
+= Conclusion
