@@ -1,0 +1,33 @@
+  // ------------------------
+  // NOTE: Modification:
+  affiliations: (),
+
+
+          #if affiliations != none {
+            v-space
+            block(width: 80%)[
+
+              #par(
+                leading: 0.78em,
+                justify: true,
+                linebreaks: "optimized",
+                "University Name: " + affiliations.university,
+              )
+
+              #par(
+                leading: 0.78em,
+                justify: true,
+                linebreaks: "optimized",
+                "Faculty: " + affiliations.faculty,
+              )
+
+
+              #par(
+                leading: 0.78em,
+                justify: true,
+                linebreaks: "optimized",
+                "Course: " + affiliations.course,
+              )
+
+            ]
+          }

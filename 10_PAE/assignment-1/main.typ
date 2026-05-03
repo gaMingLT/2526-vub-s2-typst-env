@@ -49,14 +49,14 @@
 // #colbreak()
 = Intro
 
-The benchmark chosen for porting to the updated Benchkit V2 campaign API is the `cuda_samples_matmul`. To start, context of the chosen benchmark will be discussed in @context. Modifications made will be discussed in @bench, and use of a the `ncu` command wrapper in @command-wrapper. Discussion of benchmark results will be done in @analysis.
+The benchmark chosen for porting to the updated Benchkit V2 campaign API is the `cuda_samples_matmul`. To start, context of the chosen benchmark will be discussed in @context. Modifications made will be discussed in @bench, and use of the `ncu` command wrapper in @command-wrapper. Discussion of benchmark results will be done in @analysis.
 
 
 = Context <context>
 
-The chosen benchmark to port to the updated API is `cuda_matmul`. The benchmark measures the performance of matrix multiplication on Nvidia GPU's. Matrix multiplication are regularly used to compare the performance of different (Nvidia) GPU's. 
+The chosen benchmark to port to the updated API is `cuda_matmul`. The benchmark measures the performance of matrix multiplication on Nvidia GPU's. Matrix multiplications are regularly used to compare the performance of different (Nvidia) GPU's. 
 
-The benchmark takes the dimensions of the 2 matrixes that have to be multiplied as input parameters.
+The benchmark takes the dimensions of the two matrices which have to be multiplied as input parameters.
 
 
 // More?
@@ -71,19 +71,19 @@ This section will briefly discuss the changes made to the benchmark implementati
 
 == Fetch
 
-The fetch stage of the benchmark has been updated to clone the repository containing the benchmark code. The repository is cloned into it's own directory.
+The fetch stage of the benchmark has been updated to clone the repository containing the benchmark code. The repository is cloned into its own directory.
 
 
 == Build
 
-The build stage of the benchmark is currently setup to only build the `matrixMul.cu` kernel. The `cmake` & `make` commands are sequentially executed.  First the `build` directory is created in the folder:  `/Samples/0_Introduction/matrixMul/`. 
+The build stage of the benchmark is currently setup to only build the `matrixMul.cu` kernel. The `cmake` & `make` commands are sequentially executed.  First, the `build` directory is created in the folder:  `/Samples/0_Introduction/matrixMul/`. 
 
-Inside of the `/Samples/0_Introduction/matrixMul/build` folder, the `cmake` command is executed.  Lastly, the `make` command is executed in the  `/Samples/0_Introduction/matrixMul/build` folder
+Inside of the `/Samples/0_Introduction/matrixMul/build` folder, the `cmake` command is executed.  Lastly, the `make` command is executed in the  `/Samples/0_Introduction/matrixMul/build` folder.
 
 
 == Run
 
-This stage executes a single `matrixMul` Cuda kernel. Existing code has been reused and updated. The command in @run-command is executed, note that the `ma_width` is reused twice, this to ensure that both matrices can be multiplied with each other.
+This stage executes a single `matrixMul` Cuda kernel. Existing code has been reused and updated. The command in @run-command is executed. Note that the `ma_width` is reused twice this to ensure that both matrices can be multiplied with each other.
 
 #figure(
   zebraw(
@@ -104,7 +104,7 @@ This stage executes a single `matrixMul` Cuda kernel. Existing code has been reu
 
 == Collect
 
-The existing collect has been slightly modified. The original collect phase code has been reused. The updated modification, is the addition of 3 new metric fields, as follows:
+The existing collect has been slightly modified. The original collect phase code has been reused. The modifications are the addition of 3 new metric fields, as follows:
 - dim_a: Matrix A dimensions.
 - dim_b: Matrix B dimensions.
 - dim_a_x_dim_b: Matrix A & B dimensions combined.
@@ -144,7 +144,7 @@ Due to platform availability, the benchmarks were executed on a Ubuntu 22.04 WSL
 
 == Base
 
-Included in the output of the base cuda kernel performance metrics are the following values:
+The following list of metrics are included in the output of the base Cuda kernel benchmark:
 - ma_width: Matrix A size.
 - ma_height: Matrix A size.
 - mb_width: Matrix B size.
@@ -176,7 +176,7 @@ The run variables used in the benchmark can be found in @base-run-variables.
 ) <base-run-variables>
 
 
-The matrix A size vs execution time is charted in the figures @base-old-size-vs-time and @base-old-size-vs-time.
+The matrix A size vs execution time is charted in the figures @base-old-size-vs-time and @base-new-size-vs-time.
 
 #grid(
   columns: (1fr, 1fr)
@@ -192,7 +192,7 @@ The matrix A size vs execution time is charted in the figures @base-old-size-vs-
   ) <base-new-size-vs-time>
 ]
 
-While @base-new-size-vs-time gives a general idea of how the execution time rises with Matrix A Width, the information of the dimension of both matrixes are lost. For this reason the additional metric fields in the collect phase have been added. The updated chart with these additional fields are shown in @base-old-size-vs-time.
+While @base-new-size-vs-time gives a general idea of how the execution time rises with Matrix A Width, the information of the dimension of both matrixes are lost. For this reason, the additional metric fields in the collect phase have been added. The updated chart with these additional fields are shown in @base-old-size-vs-time.
 
 Furthermore, the computational throughput of the matrix multiplication kernel can be charted as seen in @base-old-size-vs-throughput and @base-new-size-vs-throughput.
 
@@ -255,7 +255,7 @@ The additional information gathered in the collect phase, again illustrates it u
 
 == Pretty
 
-Using the `pretty` value on the campaign the graphs can be improved again. The figures can be seen in @pretty-base-1 & @pretty-base-2.
+Using the `pretty` value on the campaign, the graphs can be improved again. The figures can be seen in @pretty-base-1 & @pretty-base-2.
 
 #grid(
   columns: (1fr, 1fr)
@@ -286,3 +286,5 @@ And for the `ncu` wrapper with measured metric in @pretty-wrapper-1 & @pretty-wr
     caption: [Pretty - Matrix A Size vs NCU Metric],
   ) <pretty-wrapper-2>
 ]
+
+// TODO: Add other course benchmark to handed in files?
