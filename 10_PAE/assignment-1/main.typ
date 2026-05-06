@@ -18,7 +18,7 @@
   authors: "Milan Lagae",
   date: datetime(year: 2026, month: 05, day: 10),
 
-  // bibliography: bibliography("references.bib"),
+  bibliography: bibliography("references.bib"),
   table-of-contents: outline(depth: 2),
 
 
@@ -54,7 +54,7 @@ The benchmark chosen for porting to the updated Benchkit V2 campaign API is the 
 
 = Context <context>
 
-The chosen benchmark to port to the updated API is `cuda_matmul`. The benchmark measures the performance of matrix multiplication on Nvidia GPU's. Matrix multiplications are regularly used to compare the performance of different (Nvidia) GPU's.
+The chosen benchmark to port to the updated API is `cuda_matmul`. The benchmark measures the performance of matrix multiplication on Nvidia GPU's. Matrix multiplications are regularly used to compare the performance of different (Nvidia) GPU's. 
 
 The benchmark takes the dimensions of the two matrices which have to be multiplied as input parameters.
 
@@ -76,7 +76,7 @@ The fetch stage of the benchmark has been updated to clone the repository contai
 
 == Build
 
-The build stage of the benchmark is currently setup to only build the `matrixMul.cu` kernel. The `cmake` & `make` commands are sequentially executed.  First, the `build` directory is created in the folder:  `/Samples/0_Introduction/matrixMul/`.
+The build stage of the benchmark is currently setup to only build the `matrixMul.cu` kernel. The `cmake` & `make` commands are sequentially executed.  First, the `build` directory is created in the folder:  `/Samples/0_Introduction/matrixMul/`. 
 
 Inside of the `/Samples/0_Introduction/matrixMul/build` folder, the `cmake` command is executed.  Lastly, the `make` command is executed in the  `/Samples/0_Introduction/matrixMul/build` folder.
 
@@ -125,11 +125,11 @@ This section will discuss analyzing the results of executing the updated benchma
 
 == Platform
 
-Due to platform availability, the benchmarks were executed on a Ubuntu 22.04 WSL image on Windows 11. More information can be found in @desktop.
+Due to platform availability, the benchmarks were executed on a Ubuntu 24.04 WSL image on Windows 11. More information can be found in @desktop.
 
 #figure(
   table(
-    columns: (1fr, 1fr),
+    columns: (0.8fr, 1fr),
     [*Part*], [*Value*],
     [CPU], [Ryzen 9 5950X],
     [GPU], [RTX 3070],
@@ -138,9 +138,14 @@ Due to platform availability, the benchmarks were executed on a Ubuntu 22.04 WSL
     [OS], [Windows 11 - Version	10.0.22631 Build 22631],
     [WSL Version], [2],
     [WSL Distro], [24.04],
+    [Kernel Version], [6.6.87.2-microsoft-standard-WSL2],
+    [NVCC], [13.2, V13.2.51],
+    [NCU], [Version 2026.1.0.0 (build 37166530)]
   ),
   caption: [Desktop Specifications],
 ) <desktop>
+
+Not all platform information is included in @desktop as required by @report_info, since the focus of the report is the benchmark and not the results.
 
 == Base
 
@@ -192,7 +197,7 @@ The matrix A size vs execution time is charted in the figures @base-old-size-vs-
   ) <base-new-size-vs-time>
 ]
 
-While @base-new-size-vs-time gives a general idea of how the execution time rises with Matrix A width, the information of the dimension of both matrixes are lost. For this reason, the additional metric fields in the collect phase have been added. The updated chart with these additional fields are shown in @base-old-size-vs-time.
+While @base-new-size-vs-time gives a general idea of how the execution time rises with Matrix A Width, the information of the dimension of both matrixes are lost. For this reason, the additional metric fields in the collect phase have been added. The updated chart with these additional fields are shown in @base-old-size-vs-time.
 
 Furthermore, the computational throughput of the matrix multiplication kernel can be charted as seen in @base-old-size-vs-throughput and @base-new-size-vs-throughput.
 
@@ -250,7 +255,7 @@ The measured NCU metric is illustrated in the graphs @wrapper-old-size-vs-ncu an
   ) <wrapper-new-size-vs-ncu>
 ]
 
-The additional information gathered in the collect phase, again illustrates its usefulness in @wrapper-new-size-vs-ncu. Plotting using the new information has it limits. When increasing the size & number of run variables, the information becomes too much to be properly displayed on the x-axis & inside of the legend of the chart.
+The additional information gathered in the collect phase, again illustrates it usefulness in @wrapper-new-size-vs-ncu. Plotting using the new information has it limits. When increasing the size & number of run variables, the information becomes too much to be properly displayed on the x-axis & inside of the legend of the chart.
 
 
 == Pretty
