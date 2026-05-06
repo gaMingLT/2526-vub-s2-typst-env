@@ -293,3 +293,8 @@ And for the `ncu` wrapper with measured metric in @pretty-wrapper-1 & @pretty-wr
 ]
 
 // TODO: Add other course benchmark to handed in files?
+
+
+// = Extra
+
+// The updated benchmark campaign was modified & reused for the 'GPU Computing Course', running the base campaign and in combination with the ncu wrapper.
