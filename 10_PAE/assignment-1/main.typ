@@ -217,6 +217,8 @@ Furthermore, the computational throughput of the matrix multiplication kernel ca
 
 Using the existing information gathered during the collect phase, the throughput vs the matrix A width is graphed in @base-old-size-vs-throughput, but again some information is lost. For this reason, using the additional metric fields added in the collect phase, the information is illustrated in @base-new-size-vs-throughput.
 
+Overall the results of the benchmarks do not reveal anything unexpected. Increasing the dimensions of the multiplied matrices has negative impact on execution time. The computational throughput increases in step with the size of the matrices and executed operations.
+
 == Wrapper
 
 The default metric included in the wrapper for analysis is: `smsp__sass_l1tex_tags_mem_global`. Using the command `ncu --query-metrics --metrics smsp__sass_l1tex_tags_mem_global` the description of this metric can be queried.
