@@ -76,14 +76,68 @@ Initial sourcing for this became clear after using `perf record` & `perf lock`, 
 ) <lock-before>
 
 
-Further investigating the file, the offending function was identified to be `rand()`. Looking up the documentation of the function ..., .. .
+Further investigating the file, the offending function was identified to be `rand()`. Looking up the man page of the function @rand, it becomes clear that the function is not thread safe and suffers from heavy lock contention in thread heavy workloads.
 
 
 
 == Solution
 
+Included in the man page of the `rand()` function is a recommendation to use the safe function `rand_r()`, but this function seems to require enabling some posix standard and is deprecated.
+
+The recommendation from online forum is a random value per  thread using a thread local variable see in @random-seed-thread-local.
+
+#figure(
+  zebraw(
+    lang: false,
+    // numbering: false,
+    ```c
+    static __thread uint32_t tls_seed = 0;
+    ```,
+  ),
+  caption: [],
+) <random-seed-thread-local>
+
+In combination with `xorshift32` from @xorshift32 as shown in @xorshift.
+
+#figure(
+  zebraw(
+    lang: false,
+    // numbering: false,
+    ```c
+    static uint32_t xorshift32(void) {
+      if (tls_seed == 0)
+        tls_seed = (uint32_t)(uintptr_t)pthread_self() ^ (uint32_t)time(NULL);
+      tls_seed ^= tls_seed << 13;
+      tls_seed ^= tls_seed >> 17;
+      tls_seed ^= tls_seed << 5;
+      return tls_seed;
+    }
+    ```,
+  ),
+  caption: [],
+) <xorshift>
+
+With the updated `random_double()` shown in @randomdouble-updated, there are some additional operations on the result and multiplication to further increase the randomness of the result.
+
+#figure(
+  zebraw(
+    lang: false,
+    // numbering: false,
+    ```c
+    double random_double(void) { return (xorshift32() >> 8) * (1.0 / 16777216.0); }
+    ```,
+  ),
+  caption: [],
+) <randomdouble-updated>
 
 
+
+// == Results
+
+// TODO: Add some images to show improvements in result, or something?
+
+
+#pagebreak()
 = Improvement 2: Inlining
 
 // Explain the practice of inlining the `vec3*` operations
@@ -98,6 +152,8 @@ This section will discuss the process of inlining @inlining compute & time inten
 == Solution
 
 
+
+#pagebreak()
 = Improvement 3: Thread Pooling
 
 // Explain the process of adding a thread pool to better share the workload during rendering
@@ -214,7 +270,7 @@ The improvement in evenly shared work between the threads can be seen in @pool-u
 
 
 
-
+#pagebreak()
 = Improvement 4: Parallel Build
 
 // Explain the process of multi threaded `bvh_build`
@@ -223,7 +279,7 @@ The improvement in evenly shared work between the threads can be seen in @pool-u
 
 
 
-
+#pagebreak()
 = Improvement 5: Structure of Arrays & SIMD
 
 // Explain the process of SoA & SIMD
@@ -233,6 +289,7 @@ The improvement in evenly shared work between the threads can be seen in @pool-u
 
 
 
+#pagebreak()
 = Miscellaneous improvements <misc-improvement>
 
 // List of miscellaneous  (minor) improvements
@@ -243,6 +300,7 @@ The improvement in evenly shared work between the threads can be seen in @pool-u
 
 
 
+#pagebreak()
 = Benchmarking <benchmarking>
 
 // Analyze the performance of current implementation
@@ -255,3 +313,29 @@ The improvement in evenly shared work between the threads can be seen in @pool-u
 = Conclusion
 
 // Overall conclusion
+
+
+#pagebreak()
+= Appendix
+
+== Platform
+
+The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications listed in @desktop.
+
+// TODO: Update
+#figure(
+  table(
+    columns: (0.8fr, 1fr),
+    [*Part*], [*Value*],
+    [CPU], [Ryzen 9 5950X],
+    [RAM], [64GB (3200 Mhz)],
+    [OS], [*TODO*],
+    [Kernel Version], [*TODO*],
+    [Scheduling], [*TODO*],
+    [Make], [*TODO*],
+    [GCC], [*TODO*],
+  ),
+  caption: [Desktop Specifications],
+) <desktop>
+
+Note: for the scheduling, all benchmark are executed using `taskset`. Due to `benchkit` limitation, the `taskset` cpu list is set to all available cores and the `thread`variable is varied.
