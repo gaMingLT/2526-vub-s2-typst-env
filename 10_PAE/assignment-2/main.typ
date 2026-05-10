@@ -62,12 +62,14 @@ This report will discuss the improvements made to the CPU based pathtracer for A
 This section will discuss the improvement of removing lock contention in the pathtracer implementation.
 
 
-== Analysis
-
-
-
-
 == Problem
+
+
+#figure(
+  image("images/pool-uprof/pool-base.png", width: 80%),
+  caption: [AMD μProf - Lock Contention Threads ],
+) <lock-before>
+
 
 
 == Solution
@@ -78,12 +80,11 @@ This section will discuss the improvement of removing lock contention in the pat
 
 // Explain the practice of inlining the `vec3*` operations
 
-== Analysis
-
-
+This section will discuss the process of inlining @inlining compute & time intensive operations to improve performance.
 
 == Problem
 
+// TODO: Add image of overhead of vec3!
 
 
 == Solution
@@ -96,43 +97,112 @@ This section will discuss the improvement of removing lock contention in the pat
 This section will discuss the implementation of adding a thread pool which contains image rendering tasks. Each task will be responsible for a square tile of the image to be rendered.
 
 
-== Analysis
+// == Analysis
 
 
 
 == Problem
 
-// TODO: Add amd uprof thread image
+Analyzing the application, using the AMD μProf @amd_uprof application, and viewing the thread section, shows the behavior visible in @pool-before.
+
+// TODO: More here!
+Specifically the end of the timeline of the renderer is import. There is can be seen that the rendered splits the image in non equal work vertical slices as illustrated in @thread-util-before.
+
+
+#grid(
+  columns: (1fr, 1fr)
+)[
+  #figure(
+    image("images/pool-tilling/PAE-AS2-Tiling-Old.png"),
+    caption: [Renderer - Image Slicing Before],
+  ) <thread-util-before>
+][
+  #figure(
+    image("images/pool-uprof/pool-base.png"),
+    caption: [AMD μProf - Thread behavior ],
+  ) <pool-before>
+]
+
+Depending on the image to be rendered, some vertical slices may have less work than other vertical slices. Additionally, the last vertical slice of the image is padded so it rendered the full with of the image.
 
 #figure(
-  image("images/pool-tilling/PAE-AS2-Tiling-Old.png", width: 80%),
-  caption: [...],
-) <thread-util-before>
+  zebraw(
+    lang: false,
+    // numbering: false,
+    ```c
+    // renderer_render
+    for (int thread = 0; thread < renderer->threads; thread++)
+    {
+        thread_infos[thread].renderer = renderer;
+        thread_infos[thread].width_start = thread * width_per_thread;
+        if (thread == renderer->threads - 1)
+        {
+            // The last thread will take care of any remaining pixels if the width is not perfectly divisible by the number of threads.
+            thread_infos[thread].width_end = renderer->width;
+        }
+        else
+        {
+            thread_infos[thread].width_end = (thread + 1) * width_per_thread;
+        }
+
+        pthread_create(&threads[thread], NULL, (void *(*)(void *))renderer_render_part, &thread_infos[thread]);
+    }
+    ```,
+  ),
+  caption: [],
+) <thread-code-before>
+
+
+As is visible in @thread-code-before, the behavior mentioned earlier is visible. And the vertical slice behavior in @vertical-slice-code-before.
+
+#figure(
+  zebraw(
+    lang: false,
+    // numbering: false,
+    ```c
+    // renderer_render_part
+    for (int w = width_start; w < width_end; w++)
+    {
+        for (int h = 0; h < renderer->height; h++)
+        {
+            struct vec3 *color = &renderer->framebuffer[w + h * renderer->width];
+
+            for (int sample = 0; sample < renderer->scene->samples; sample++)
+            {
+                render_pixel(renderer, color, w, h);
+            }
+        }
+    }
+    ```,
+  ),
+  caption: [],
+) <vertical-slice-code-before>
 
 == Solution
 
-// TODO: Add amd uprof thread image
+// Add some source also
+The problem identified above was solved by two additions. First, instead of vertical slices, the image is now split in smaller (32x32) square tiles, as illustrated in @thread-util-after. In addition to the image tilling, render tasks are now based on pool design @c_pool_1 @c_pool_2.
 
-// TODO: Fix image
-#figure(
-  image("images/pool-tilling/PAE-AS2-Tiling-New.png", width: 80%),
-  caption: [...],
-) <thread-util-after>
+The improvement in evenly shared work between the threads can be seen in @pool-updated. The end of the timeline, the threads finish more at the same time and there are no more threads that are sitting idle.
 
+#grid(
+  columns: (1fr, 1fr)
+)[
+  // TODO: Fix image
+  #figure(
+    image("images/pool-tilling/PAE-AS2-Tiling-New.png", width: 80%),
+    caption: [...],
+  ) <thread-util-after>
+][
+  #figure(
+    image("images/pool-uprof/pool-updated.png"),
+    caption: [...],
+  ) <pool-updated>
+]
 
-// #grid(
-//   columns: (1fr, 1fr)
-// )[
-//   #figure(
-//     image("images/wrapper/wrapper-old-size-vs-nuc.pdf"),
-//     caption: [Old - Size vs NCU Metric],
-//   ) <wrapper-old-size-vs-ncu>
-// ][
-//   #figure(
-//     image("images/wrapper/wrapper-new-size-vs-ncu.pdf"),
-//     caption: [New - Size vs NCU Metric],
-//   ) <wrapper-new-size-vs-ncu>
-// ]
+=== Implementation
+
+// *TODO*: Continue here!
 
 
 
@@ -159,8 +229,8 @@ This section will discuss the implementation of adding a thread pool which conta
 
 // List of miscellaneous  (minor) improvements
 
-
-
+- render pixel, 'lanes', store, multiple samples together
+- post process pixels add the end and SIMD
 
 
 
