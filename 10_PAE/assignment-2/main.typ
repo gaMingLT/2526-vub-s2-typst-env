@@ -64,11 +64,19 @@ This section will discuss the improvement of removing lock contention in the pat
 
 == Problem
 
+The first problem that was identified & solved is the lock contention in the `random.c` file. When first benchmarking the application, it became clear that increasing the thread count made the application significantly slower.
+
+Initial sourcing for this became clear after using `perf record` & `perf lock`, for which the result can be seen in (*TODO/ADD*). This same behavior is visible in @lock-before, where the gray lines between the thread activity is the thread waiting for a lock to be finished.
+
+// TODO: Add perf record & perf lock image!
 
 #figure(
   image("images/pool-uprof/pool-base.png", width: 80%),
   caption: [AMD μProf - Lock Contention Threads ],
 ) <lock-before>
+
+
+Further investigating the file, the offending function was identified to be `rand()`. Looking up the documentation of the function ..., .. .
 
 
 
