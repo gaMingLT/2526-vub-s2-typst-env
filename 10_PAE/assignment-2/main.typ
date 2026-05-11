@@ -177,12 +177,12 @@ Specifically the end of the timeline of the renderer is import. There is can be 
   columns: (1fr, 1fr)
 )[
   #figure(
-    image("images/pool-tilling/PAE-AS2-Tiling-Old.png"),
+    image("images/3-pool/pool-tilling/PAE-AS2-Tiling-Old.png"),
     caption: [Renderer - Image Slicing Before],
   ) <thread-util-before>
 ][
   #figure(
-    image("images/pool-uprof/pool-base.png"),
+    image("images/3-pool/pool-uprof/pool-base.png"),
     caption: [AMD μProf - Thread behavior ],
   ) <pool-before>
 ]
@@ -254,12 +254,12 @@ The improvement in evenly shared work between the threads can be seen in @pool-u
 )[
   // TODO: Fix image
   #figure(
-    image("images/pool-tilling/PAE-AS2-Tiling-New.png", width: 80%),
+    image("images/3-pool/pool-tilling/PAE-AS2-Tiling-New.png", width: 80%),
     caption: [...],
   ) <thread-util-after>
 ][
   #figure(
-    image("images/pool-uprof/pool-updated.png"),
+    image("images/3-pool/pool-uprof/pool-updated.png"),
     caption: [...],
   ) <pool-updated>
 ]
