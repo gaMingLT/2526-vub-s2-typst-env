@@ -82,57 +82,57 @@ Further investigating the file, the offending function was identified to be `ran
 
 == Solution
 
-Included in the man page of the `rand()` function is a recommendation to use the safe function `rand_r()`, but this function seems to require enabling some posix standard and is deprecated.
+// Included in the man page of the `rand()` function is a recommendation to use the safe function `rand_r()`, but this function seems to require enabling some posix standard and is deprecated.
 
-The recommendation from online forum is a random value per  thread using a thread local variable see in @random-seed-thread-local.
+// The recommendation from online forum is a random value per  thread using a thread local variable see in @random-seed-thread-local.
 
-#figure(
-  zebraw(
-    lang: false,
-    // numbering: false,
-    ```c
-    static __thread uint32_t tls_seed = 0;
-    ```,
-  ),
-  caption: [],
-) <random-seed-thread-local>
+// #figure(
+//   zebraw(
+//     lang: false,
+//     // numbering: false,
+//     ```c
+//     static __thread uint32_t tls_seed = 0;
+//     ```,
+//   ),
+//   caption: [],
+// ) <random-seed-thread-local>
 
-In combination with `xorshift32` from @xorshift32 as shown in @xorshift.
+// In combination with `xorshift32` from @xorshift32 as shown in @xorshift.
 
-#figure(
-  zebraw(
-    lang: false,
-    // numbering: false,
-    ```c
-    static uint32_t xorshift32(void) {
-      if (tls_seed == 0)
-        tls_seed = (uint32_t)(uintptr_t)pthread_self() ^ (uint32_t)time(NULL);
-      tls_seed ^= tls_seed << 13;
-      tls_seed ^= tls_seed >> 17;
-      tls_seed ^= tls_seed << 5;
-      return tls_seed;
-    }
-    ```,
-  ),
-  caption: [],
-) <xorshift>
+// #figure(
+//   zebraw(
+//     lang: false,
+//     // numbering: false,
+//     ```c
+//     static uint32_t xorshift32(void) {
+//       if (tls_seed == 0)
+//         tls_seed = (uint32_t)(uintptr_t)pthread_self() ^ (uint32_t)time(NULL);
+//       tls_seed ^= tls_seed << 13;
+//       tls_seed ^= tls_seed >> 17;
+//       tls_seed ^= tls_seed << 5;
+//       return tls_seed;
+//     }
+//     ```,
+//   ),
+//   caption: [],
+// ) <xorshift>
 
-With the updated `random_double()` shown in @randomdouble-updated, there are some additional operations on the result and multiplication to further increase the randomness of the result.
+// With the updated `random_double()` shown in @randomdouble-updated, there are some additional operations on the result and multiplication to further increase the randomness of the result.
 
-#figure(
-  zebraw(
-    lang: false,
-    // numbering: false,
-    ```c
-    double random_double(void) { return (xorshift32() >> 8) * (1.0 / 16777216.0); }
-    ```,
-  ),
-  caption: [],
-) <randomdouble-updated>
+// #figure(
+//   zebraw(
+//     lang: false,
+//     // numbering: false,
+//     ```c
+//     double random_double(void) { return (xorshift32() >> 8) * (1.0 / 16777216.0); }
+//     ```,
+//   ),
+//   caption: [],
+// ) <randomdouble-updated>
 
 
 
-// == Results
+== Results
 
 // TODO: Add some images to show improvements in result, or something?
 
@@ -146,12 +146,44 @@ This section will discuss the process of inlining @inlining compute & time inten
 
 == Problem
 
-// TODO: Add image of overhead of vec3!
+What became clear during the previous improvement & looking at the code, is the heavy usage of `vec3` operation calls. Using the information displayed in @inlining-base-perf-1 & @inlining-base-perf-2, it becomes clear that there is potential performance to be gained.
+
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 5pt,
+)[
+  // TODO: Fix image
+  #figure(
+    image("images/2-inlining/select-perf-record-base-inline-02-04.png"),
+    caption: [...],
+  ) <inlining-base-perf-1>
+][
+  #figure(
+    image("images/2-inlining/select-perf-record-base-inline-04-04.png"),
+    caption: [...],
+  ) <inlining-base-perf-2>
+]
+
+When using the AMD μProf application in which show the profile result in @inlining-base-amd-uprof, that the `vec3_index` function alone is taking *95 seconds*.
+
+#figure(
+  image("images/2-inlining/select-uprof-base-inline-04-20.png", width: 80%),
+  caption: [...],
+) <inlining-base-amd-uprof>
 
 
 == Solution
 
+The most immediate fix for this performance issue is the application of placing all the `vec3_*` function inside of the `vec3.h` file and placing the `inline` keyword before each. This 'forces' the compiler to inline the function code in every location where the code is called.
 
+// === Implementation
+
+
+== Results
+
+The benchmark results of this section are the combination of the previous improvement and this improvement applied.
+
+// TODO: Add benchmark results!
 
 #pagebreak()
 = Improvement 3: Thread Pooling
@@ -192,9 +224,14 @@ Depending on the image to be rendered, some vertical slices may have less work t
 #figure(
   zebraw(
     lang: false,
+    highlight-lines: (
+      ..range(9, 11),
+      (10, [The thread padding alluded to earlier, resulting in uneven work shared.]),
+    ),
     // numbering: false,
     ```c
     // renderer_render
+    // (...)
     for (int thread = 0; thread < renderer->threads; thread++)
     {
         thread_infos[thread].renderer = renderer;
@@ -211,6 +248,7 @@ Depending on the image to be rendered, some vertical slices may have less work t
 
         pthread_create(&threads[thread], NULL, (void *(*)(void *))renderer_render_part, &thread_infos[thread]);
     }
+    // (...)
     ```,
   ),
   caption: [],
@@ -225,6 +263,7 @@ As is visible in @thread-code-before, the behavior mentioned earlier is visible.
     // numbering: false,
     ```c
     // renderer_render_part
+    // (...)
     for (int w = width_start; w < width_end; w++)
     {
         for (int h = 0; h < renderer->height; h++)
@@ -237,6 +276,7 @@ As is visible in @thread-code-before, the behavior mentioned earlier is visible.
             }
         }
     }
+    // (...)
     ```,
   ),
   caption: [],
@@ -244,17 +284,19 @@ As is visible in @thread-code-before, the behavior mentioned earlier is visible.
 
 == Solution
 
-// Add some source also
+// TODO: Add some source also
+// TODO: Change tile size when changed!
 The problem identified above was solved by two additions. First, instead of vertical slices, the image is now split in smaller (32x32) square tiles, as illustrated in @thread-util-after. In addition to the image tilling, render tasks are now based on pool design @c_pool_1 @c_pool_2.
 
 The improvement in evenly shared work between the threads can be seen in @pool-updated. The end of the timeline, the threads finish more at the same time and there are no more threads that are sitting idle.
 
 #grid(
-  columns: (1fr, 1fr)
+  columns: (1fr, 1fr),
+  column-gutter: 5pt,
 )[
   // TODO: Fix image
   #figure(
-    image("images/3-pool/pool-tilling/PAE-AS2-Tiling-New.png", width: 80%),
+    image("images/3-pool/pool-tilling/PAE-AS2-Tiling-New.png"),
     caption: [...],
   ) <thread-util-after>
 ][
@@ -266,14 +308,29 @@ The improvement in evenly shared work between the threads can be seen in @pool-u
 
 === Implementation
 
-// *TODO*: Continue here!
+// TODO: Continue here!
 
+
+== Results
+
+// TODO: Results here!
 
 
 #pagebreak()
 = Improvement 4: Parallel Build
 
 // Explain the process of multi threaded `bvh_build`
+
+This section will focus on making the `bvh_build` initialization function faster, by applying fork-join like multi-threading to the build process.
+
+
+== Problem
+
+
+Increasing the complexity & number of triangles when the scenes increases, leads to an explosion of the time it takes to build the BVH tree during the inizliation process, this behavior is visible in *ADD*.
+
+// TODO: Add image: build time increasing for large scenes.
+
 
 
 
@@ -284,6 +341,15 @@ The improvement in evenly shared work between the threads can be seen in @pool-u
 
 // Explain the process of SoA & SIMD
 
+This section will discuss the application of transforming data layout from a AoS to Structure of Arrays (SoA). This to facilitate the application of SIMD vectorization on select functions.
+
+
+== Problem
+
+
+
+
+== Solution
 
 
 
@@ -295,7 +361,7 @@ The improvement in evenly shared work between the threads can be seen in @pool-u
 // List of miscellaneous  (minor) improvements
 
 - render pixel, 'lanes', store, multiple samples together
-- post process pixels add the end and SIMD
+- post process pixels add the end using SIMD
 
 
 
