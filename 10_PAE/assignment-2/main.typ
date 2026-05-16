@@ -52,7 +52,9 @@
 This report will discuss the improvements made to the CPU based pathtracer for Assignment-2 of the course: 'Performance Analysis & Evaluation'. Each major improvement will be discussed in their respective sections. A collection of miscellaneous improvements will be discussed in @misc-improvement. Finally, the latest version of the implementation will be thoroughly discussed in @benchmarking.
 
 
-// More?
+// = Base Version
+
+// Short analysis of base version results?
 
 
 = Improvement 1: Lock Contention
@@ -71,13 +73,21 @@ Initial sourcing for this became clear after using `perf record` & `perf lock`, 
 // TODO: Add perf record & perf lock image!
 
 #figure(
-  image("images/pool-uprof/pool-base.png", width: 80%),
+  image("images/3-pool/pool-uprof/pool-base.png", width: 80%),
   caption: [AMD μProf - Lock Contention Threads ],
 ) <lock-before>
 
 
 Further investigating the file, the offending function was identified to be `rand()`. Looking up the man page of the function @rand, it becomes clear that the function is not thread safe and suffers from heavy lock contention in thread heavy workloads.
 
+This behavior becomes clear when the total time of each scene is plotted vs the thread count in @base-tt_vs_thread_count.
+
+#figure(
+  image("images/charts/0-base/total_time_vs_thread_count.pdf", width: 80%),
+  caption: [*TODO*],
+) <base-tt_vs_thread_count>
+
+In the scenes 01, 02 and 04 increasing the thread count from 8 to 12 increases the total time taking for rendering said image. For the larger scene 05 this behavior is not as clearly visible, but there is slight increase in time when increasing the number of threads. This increase can be attributed to the use of the non reentrant safe `rand()` function.
 
 
 == Solution
@@ -285,8 +295,7 @@ As is visible in @thread-code-before, the behavior mentioned earlier is visible.
 == Solution
 
 // TODO: Add some source also
-// TODO: Change tile size when changed!
-The problem identified above was solved by two additions. First, instead of vertical slices, the image is now split in smaller (32x32) square tiles, as illustrated in @thread-util-after. In addition to the image tilling, render tasks are now based on pool design @c_pool_1 @c_pool_2.
+The problem identified above was solved by two additions. First, instead of vertical slices, the image is now split in smaller (16x16) square tiles, as illustrated in @thread-util-after. In addition to the image tilling, render tasks are now based on pool design @c_pool_1 @c_pool_2.
 
 The improvement in evenly shared work between the threads can be seen in @pool-updated. The end of the timeline, the threads finish more at the same time and there are no more threads that are sitting idle.
 
@@ -362,8 +371,8 @@ This section will discuss the application of transforming data layout from a AoS
 
 - render pixel, 'lanes', store, multiple samples together
 - post process pixels add the end using SIMD
-
-
+- reordering of `bvh_ray_intersect`
+- addition of inverse on `vec3` and `aabb_ray_intersect`
 
 
 #pagebreak()
@@ -383,6 +392,18 @@ This section will discuss the application of transforming data layout from a AoS
 
 #pagebreak()
 = Appendix
+
+== Methodology
+
+This section will briefly explain some of the benchmarking methodology used and why there are some diversion from the recommendations made in class. This will in addition to the executed command mention with each image.
+
+=== Base
+
+The benchmarks performed on the base version where executed with the provided `benchmark.py` file. In combination with `taskset` & `perfstat` information was collected. Due to `benchkit` limitation, the `cpu_list` variable was set to all cores available for each iteration. The ideal would be that the `cpu_list` matches the `nb_threads` variable but was unsuccessful in the implementation.
+
+The numbers of runs was set to *3*, this deviates from the recommendations, but due to how much time the implementation takes, this was considered an appropriate middle ground.
+
+Additionally for `scene-05`, the number of thread count was limited to *20*, for the same reason as before.
 
 == Platform
 
