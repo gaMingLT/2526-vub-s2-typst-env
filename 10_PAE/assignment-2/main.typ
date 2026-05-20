@@ -319,8 +319,10 @@ The improvement in evenly shared work between the threads can be seen in @pool-u
 
 // TODO: Continue here!
 
+*TODO:* also mentioned the pixel lanes & SoA of the frame buffer!
 
-== Results
+
+// == Results
 
 // TODO: Results here!
 
@@ -358,9 +360,19 @@ This section will discuss the application of transforming data layout from a AoS
 
 
 
+
+
 == Solution
 
+Implementing the SoA memory layout in combination with `aligned_malloc` allows for the application of SIMD. While it would seem attractive to just use apply SIMD everywhere this is not what the performance numbers said. Choosing which function to transform in to using SIMD must be considered & measured.
 
+Due note, that transforming from a AoS to SoA and (naively) replacing all `LINKED_LIST_FOREACH` macro with `for` loops, considerably reduces the performance of the application.
+
+// TODO: Add numbers
+
+Let's start of with some example of functions where the application of SIMD has negligible or negative impacts. The following numbers and example are measured for `scene-05` and using *20* threads. We note that his is not a statisicaly analyis, but the wide chance in numbers does give an indicatiion of performance.
+
+// TODO: add functions with numbers, etc
 
 
 
@@ -369,10 +381,10 @@ This section will discuss the application of transforming data layout from a AoS
 
 // List of miscellaneous  (minor) improvements
 
-- render pixel, 'lanes', store, multiple samples together
-- post process pixels add the end using SIMD
-- reordering of `bvh_ray_intersect`
-- addition of inverse on `vec3` and `aabb_ray_intersect`
+// - render pixel, 'lanes', store, multiple samples together
+// - post process pixels add the end using SIMD
+// - reordering of `bvh_ray_intersect`
+// - addition of inverse on `vec3` and `aabb_ray_intersect`
 
 
 #pagebreak()
@@ -401,9 +413,33 @@ This section will briefly explain some of the benchmarking methodology used and 
 
 The benchmarks performed on the base version where executed with the provided `benchmark.py` file. In combination with `taskset` & `perfstat` information was collected. Due to `benchkit` limitation, the `cpu_list` variable was set to all cores available for each iteration. The ideal would be that the `cpu_list` matches the `nb_threads` variable but was unsuccessful in the implementation.
 
-The numbers of runs was set to *3*, this deviates from the recommendations, but due to how much time the implementation takes, this was considered an appropriate middle ground.
+The numbers of runs was set to *3*, this deviates from the recommendations @paae_cov_range, @number_of_runs, but due to how much time the implementation takes, this was considered an appropriate middle ground.
 
 Additionally for `scene-05`, the number of thread count was limited to *20*, for the same reason as before.
+
+=== Lock
+
+For the lock improvement, the usage of `taskset` was identical as with the base version. The number of runs was capped at *1* all executed variations. For `scene-05` the decision was made to only start benchmarking from the number of threads of 8 until 20.
+
+
+=== Inline
+
+The number of runs per iteration was again set to *1*. All scenes where executed with the whole thread count range: `[1..33]`.
+
+
+=== Pool
+
+Due to the improvement of the execution time of the application, the decision was made here to set the number of runs for each iteration to *5*, more closely matching the recommendation seen in class. All scenes where executed with the whole thread count range: `[1..33]`.
+
+
+=== SoA
+
+For this improvement the decision was made to execute *10* runs per iteration. This feels a good middle ground between detecting any instability and execution time for the benchmark. During previous benchmarks, the time variance between _seems_ very stable.
+
+
+=== Final
+
+// TODO: Measure the final version?
 
 == Platform
 
