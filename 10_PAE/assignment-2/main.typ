@@ -43,6 +43,7 @@
 // Modify the spacing above a figure (codeblock), so the language annotation does not conflict with text.
 #show figure.where(): set block(above: 2em, below: 1em)
 
+// TODO: Maybe use flamegraph and use differential one to compare between implementations?
 
 // #colbreak()
 = Intro
@@ -366,11 +367,16 @@ This section will discuss the application of transforming data layout from a AoS
 
 Implementing the SoA memory layout in combination with `aligned_malloc` allows for the application of SIMD. While it would seem attractive to just use apply SIMD everywhere this is not what the performance numbers said. Choosing which function to transform in to using SIMD must be considered & measured.
 
-Due note, that transforming from a AoS to SoA and (naively) replacing all `LINKED_LIST_FOREACH` macro with `for` loops, considerably reduces the performance of the application.
+Due note, that transforming from a AoS to SoA and (naively) replacing all `LINKED_LIST_FOREACH` macro with `for` loops, considerably reduces the performance of the application. Specifically for scene 05 on threads the times where: $~$25 seconds build; $~$ 60 seconds rendering.
 
-// TODO: Add numbers
+After improving the `aabb_ray_intersect` with a more performant implementation and addition of an `inverse` field on `vec3` the render time was reduced to $~$ 50 seconds; the build time staid the same.
 
 Let's start of with some example of functions where the application of SIMD has negligible or negative impacts. The following numbers and example are measured for `scene-05` and using *20* threads. We note that his is not a statisicaly analyis, but the wide chance in numbers does give an indicatiion of performance.
+
+Implementing a SIMD based version of `aabb_for_triangles` (including `aabb_for_triangle` & `aabb_surrounding`) the build time regressed to $~$ 30 seconds. The same can be said for `postprocess_pixels`, there the SIMD implementation regressed by about $~$ 1 second for the render time.
+
+The function's that did benefit from SIMD application is the `linked_list_ray_intersect` (now called `ray_intersect`) and the 2 downstream functions: `triangle_ray_intersect_simd` &`triangle_ray_intersect_sse`. This resulted in the following improvement: render time to $~$ 35 seconds for scene 05; $~$ 6 seconds for scene 04, coming from 10/8 seconds.
+
 
 // TODO: add functions with numbers, etc
 
