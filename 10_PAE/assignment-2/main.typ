@@ -6,7 +6,7 @@
 #import "@preview/zebraw:0.5.2": *
 #show: zebraw
 
-#import "@preview/lilaq:0.5.0" as lq
+#import "@preview/lilaq:0.6.0" as lq
 
 #let cuhk = super(sym.suit.spade)
 
@@ -69,7 +69,7 @@ This section will discuss the improvement of removing lock contention in the pat
 
 The first problem that was identified & solved is the lock contention in the `random.c` file. When first benchmarking the application, it became clear that increasing the thread count made the application significantly slower.
 
-Initial sourcing for this became clear after using `perf record` & `perf lock`, for which the result can be seen in (*TODO/ADD*). This same behavior is visible in @lock-before, where the gray lines between the thread activity is the thread waiting for a lock to be finished.
+Initial sourcing for this became clear after using `perf stat`, `perf record` & `strace` for which the result can be seen in (*TODO/ADD*). This same behavior is visible in @lock-before, where the gray lines between the thread activity is the thread waiting for a lock to be finished.
 
 // TODO: Add perf record & perf lock image!
 
@@ -367,23 +367,86 @@ This section will discuss the application of transforming data layout from a AoS
 
 Implementing the SoA memory layout in combination with `aligned_malloc` allows for the application of SIMD. While it would seem attractive to just use apply SIMD everywhere this is not what the performance numbers said. Choosing which function to transform in to using SIMD must be considered & measured.
 
-Due note, that transforming from a AoS to SoA and (naively) replacing all `LINKED_LIST_FOREACH` macro with `for` loops, considerably reduces the performance of the application. Specifically for scene 05 on threads the times where: $~$25 seconds build; $~$ 60 seconds rendering.
+Due note, that transforming from a AoS to SoA and (naively) replacing all `LINKED_LIST_FOREACH` macro with `for` loops, considerably reduces the performance of the application. Specifically for scene 05 on threads the times where: $~$25s build; $~$ 60s rendering (1 on @simd-soa-timings).
 
-After improving the `aabb_ray_intersect` with a more performant implementation and addition of an `inverse` field on `vec3` the render time was reduced to $~$ 50 seconds; the build time staid the same.
+After improving the `aabb_ray_intersect` with a more performant implementation and addition of an `inverse` field on `vec3` the render time was reduced to $~$ 50s; the build time staid the same (2 on @simd-soa-timings).
 
 Let's start of with some example of functions where the application of SIMD has negligible or negative impacts. The following numbers and example are measured for `scene-05` and using *20* threads. We note that his is not a statisicaly analyis, but the wide chance in numbers does give an indicatiion of performance.
 
-Implementing a SIMD based version of `aabb_for_triangles` (including `aabb_for_triangle` & `aabb_surrounding`) the build time regressed to $~$ 30 seconds. The same can be said for `postprocess_pixels`, there the SIMD implementation regressed by about $~$ 1 second for the render time.
+Implementing a SIMD based version of `aabb_for_triangles` (including `aabb_for_triangle` & `aabb_surrounding`) the build time regressed to $~$ 30s. The same can be said for `postprocess_pixels`, there the SIMD implementation regressed by about $~$ 1s for the render time (3 on @simd-soa-timings).
 
-The function's that did benefit from SIMD application is the `linked_list_ray_intersect` (now called `ray_intersect`) and the 2 downstream functions: `triangle_ray_intersect_simd` &`triangle_ray_intersect_sse`. This resulted in the following improvement: render time to $~$ 35 seconds for scene 05; $~$ 6 seconds for scene 04, coming from 10/8 seconds.
+#figure(
+  caption: [Performance Evolution Profile (Scene 05, 20 Threads)],
+  lq.diagram(
+    width: 14cm,
+    height: 8cm,
+    ylabel: [Time (seconds)],
+    ylim: (0, 70),
+    grid: (stroke: 0.5pt + gray.lighten(50%)),
+    legend: (position: right + top),
+
+    xaxis: (
+      subticks: none,
+      ticks: (
+        (0, [1]),
+        (1, [2]),
+        (2, [3]),
+        (3, [4]),
+        (4, [5]),
+        (5, [6]),
+      ),
+    ),
+
+    // 1. Build Time Bars
+    lq.bar(
+      range(6),
+      (25, 25, 30, 30, 12, 12),
+      width: 35%,
+      offset: -0.18,
+      fill: rgb("#4A90E2"),
+      label: [Build Time],
+    ),
+
+    // 2. Render Time Bars
+    lq.bar(
+      range(6),
+      (60, 50, 50, 35, 35, 22),
+      width: 35%,
+      offset: 0.18,
+      fill: rgb("#d009c0"),
+      label: [Render Time],
+    ),
+
+    // Number positioning using official documentation's padding and placement rules
+    ..range(6)
+      .map(i => {
+        let build_y = (25, 25, 30, 30, 12, 12).at(i)
+        let render_y = (60, 50, 50, 35, 35, 22).at(i)
+
+        (
+          lq.place(i - 0.18, build_y, pad(bottom: 0.3em)[#text(size: 8pt)[#build_y\s]], align: bottom + center),
+          lq.place(i + 0.18, render_y, pad(bottom: 0.3em)[#text(size: 8pt)[#render_y\s]], align: bottom + center),
+        )
+      })
+      .flatten(),
+  ),
+) <simd-soa-timings>
+
+The function's that did benefit from SIMD application is the `linked_list_ray_intersect` (now called `ray_intersect`) and the 2 downstream functions: `triangle_ray_intersect_simd` &`triangle_ray_intersect_sse`. This resulted in the following improvement: render time to $~$ 35s for scene 05; $~$ 6s for scene 04, coming from 10/8s (4 on @simd-soa-timings).
+
+Continuing with the improvements, applying SIMD on the `calculate_split_cost` function decreased the build time from around $~$ 25s to $~$ 12s (5 on @simd-soa-timings).
+
+Included in this improvement is the addition of the `inverse` field on the `vec3` struct and re-reordering in the `bvh_ray_intersect` function by returning distance from the `aab_ray_intersect` function. For scene 05, this result in the following improvement; From $~$35s render time to $~$22s (6 on @simd-soa-timings).
 
 
-// TODO: add functions with numbers, etc
+== Results
+
+// TODO: Add results
 
 
 
 #pagebreak()
-= Miscellaneous improvements <misc-improvement>
+= Final & Miscellaneous improvements <misc-improvement>
 
 // List of miscellaneous  (minor) improvements
 
@@ -440,11 +503,41 @@ Due to the improvement of the execution time of the application, the decision wa
 
 === Parallel
 
-Due to the limitation of benchkit  mentioned earlier or not finding a working implementation, the build phase of the pathtracer uses the maximum available of threads it can see on the system. If `taskset` could be set in step with the number of threads givin to the render time, the build time would also gradualy increase when the thread count is increased. In the current implementation & benchmarking phase, the build time uses the maximum number of available threads.
+Due to the limitation of benchkit  mentioned earlier or not finding a working implementation, the build phase of the pathtracer uses the maximum available of threads it can see on the system. If `taskset` could be set in step with the number of threads given to the render time, the build time would also gradually increase when the thread count is increased. In the current implementation & benchmarking phase, the build time uses the maximum number of available threads.
 
 === SoA
 
-For this improvement the decision was made to execute *10* runs per iteration. This feels a good middle ground between detecting any instability and execution time for the benchmark. During previous benchmarks, the time variance between _seems_ very stable.
+For this improvement the decision was made to execute *10* runs per iteration. This feels a good middle ground between detecting any instability and execution time for the benchmark. During previous benchmarks, the time variance between run _seems_ quite stable.
+
+#figure(
+  // Integrated legend mapping the numbers to their detailed optimization names
+  align(left)[
+    #text(weight: "bold", size: 0.95em, fill: gray.darken(30%))[Step Explanations]
+    #v(0.8em)
+
+    #grid(
+      columns: (1fr, 1fr),
+      column-gutter: 2.5em,
+      grid(
+        columns: (auto, 1fr),
+        column-gutter: 0.8em,
+        row-gutter: 0.9em,
+        text(weight: "bold", fill: gray.darken(40%))[Step 1], [Naive SoA (Baseline transition)],
+        text(weight: "bold", fill: gray.darken(40%))[Step 2], [Optimized AABB (`aabb_ray_intersect`)],
+        text(weight: "bold", fill: gray.darken(40%))[Step 3], [SIMD Build Regress (`aabb_for_triangles`)],
+      ),
+      grid(
+        columns: (auto, 1fr),
+        column-gutter: 0.8em,
+        row-gutter: 0.9em,
+        text(weight: "bold", fill: gray.darken(40%))[Step 4], [SIMD Ray Intersect (`ray_intersect`)],
+        text(weight: "bold", fill: gray.darken(40%))[Step 5], [SIMD Split Cost (`calculate_split_cost`)],
+        text(weight: "bold", fill: gray.darken(40%))[Step 6], [BVH Reorder + Inverse (`vec3` struct & logic)],
+      ),
+    )
+  ],
+  caption: [@simd-soa-timings Legend timings],
+)
 
 
 === Final
