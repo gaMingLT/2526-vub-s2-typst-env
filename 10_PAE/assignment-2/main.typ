@@ -115,7 +115,10 @@ The improvements in performance when the lock contention is removed is visible i
   ],
 )
 
-The behavior where the speedup increases when more threads are used, clearly show the non re-entrant behavior of the original `rand()` function. The improvement in performance becomes even more clear, when looking at the IPC of the two implementations in @derived-metrics-lock-vs-base.
+The behavior where the speedup increases when more threads are used, clearly show the non re-entrant behavior of the original `rand()` function. The charts in @speedup-lock-vs-base given an indication of how efficiently the implementation makes use of the available threads compared between the versions.
+
+
+The improvement in performance becomes even more clear, when looking at the IPC of the two implementations in @derived-metrics-lock-vs-base.
 
 // TODO: Check charts for correctness!
 #figure(
@@ -342,7 +345,7 @@ Increasing the complexity & number of triangles when the scenes increases, leads
 
 
 #pagebreak()
-= Improvement 5: Structure of Arrays & SIMD
+= Improvement 5: Structure of Arrays & SIMD <soa>
 
 // Explain the process of SoA & SIMD
 
@@ -359,13 +362,13 @@ The problem to be solved is the usage of linked list, which makes use of next po
 
 Implementing the SoA memory layout in combination with `aligned_malloc` allows for the application of SIMD. While it would seem attractive to just use apply SIMD everywhere this is not what the performance numbers said. Choosing which function to transform in to using SIMD must be considered & measured.
 
-Due note, that transforming from a AoS to SoA and (naively) replacing all `LINKED_LIST_FOREACH` macro with `for` loops, considerably reduces the performance of the application. Specifically for scene 05 on threads the times where: $~$25s build; $~$ 60s rendering (1 on @simd-soa-timings).
+Due note, that transforming from a AoS to SoA and (naively) replacing all `LINKED_LIST_FOREACH` macro with `for` loops, considerably reduces the performance of the application. Specifically for scene 05 on threads the times where: $~$25s build; $~$60s rendering (1 on @simd-soa-timings).
 
-After improving the `aabb_ray_intersect` with a more performant implementation and addition of an `inverse` field on `vec3` the render time was reduced to $~$ 50s; the build time staid the same (2 on @simd-soa-timings).
+After improving the `aabb_ray_intersect` with a more performant implementation and addition of an `inverse` field on `vec3` the render time was reduced to $~$50s; the build time staid the same (2 on @simd-soa-timings).
 
 Let's start of with some example of functions where the application of SIMD has negligible or negative impacts. The following numbers and example are measured for `scene-05` and using *20* threads. We note that his is not a statisicaly analyis, but the wide chance in numbers does give an indicatiion of performance.
 
-Implementing a SIMD based version of `aabb_for_triangles` (including `aabb_for_triangle` & `aabb_surrounding`) the build time regressed to $~$ 30s. The same can be said for `postprocess_pixels`, there the SIMD implementation regressed by about $~$ 1s for the render time (3 on @simd-soa-timings).
+Implementing a SIMD based version of `aabb_for_triangles` (including `aabb_for_triangle` & `aabb_surrounding`) the build time regressed to $~$30s. The same can be said for `postprocess_pixels`, there the SIMD implementation regressed by about $~$1s for the render time (3 on @simd-soa-timings).
 
 #figure(
   caption: [Performance Evolution Profile (Scene 05, 20 Threads)],
@@ -424,9 +427,9 @@ Implementing a SIMD based version of `aabb_for_triangles` (including `aabb_for_t
   ),
 ) <simd-soa-timings>
 
-The function's that did benefit from SIMD application is the `linked_list_ray_intersect` (now called `ray_intersect`) and the 2 downstream functions: `triangle_ray_intersect_simd` &`triangle_ray_intersect_sse`. This resulted in the following improvement: render time to $~$ 35s for scene 05; $~$ 6s for scene 04, coming from 10/8s (4 on @simd-soa-timings).
+The function's that did benefit from SIMD application is the `linked_list_ray_intersect` (now called `ray_intersect`) and the 2 downstream functions: `triangle_ray_intersect_simd` &`triangle_ray_intersect_sse`. This resulted in the following improvement: render time to $~$35s for scene 05; $~$6s for scene 04, coming from 10/8s (4 on @simd-soa-timings).
 
-Continuing with the improvements, applying SIMD on the `calculate_split_cost` function decreased the build time from around $~$ 25s to $~$ 12s (5 on @simd-soa-timings).
+Continuing with the improvements, applying SIMD on the `calculate_split_cost` function decreased the build time from around $~$25s to $~$12s (5 on @simd-soa-timings).
 
 Included in this improvement is the addition of the `inverse` field on the `vec3` struct and re-reordering in the `bvh_ray_intersect` function by returning distance from the `aab_ray_intersect` function. For scene 05, this result in the following improvement; From $~$35s render time to $~$22s (6 on @simd-soa-timings).
 
@@ -468,10 +471,16 @@ Included in this improvement is the addition of the `inverse` field on the `vec3
 #pagebreak()
 = Final <final>
 
+This section will discuss the final version of the pathtracer.
+
 == Improvement
+
+The latest improvements for the pathtracer is the addition of a indices based bvh build step. This step is more focused on the reduction of the memory usage, particularly for scene 05. Where original, for the implementation in @soa, the maxium memory usage sits around $~$12GB. The added benefit is also a slight improvement in performance during the render time of the image, while build time is the same.
+
 
 == Results
 
+// - greater benefit on the large image compared to smaller images
 
 = Overview
 
