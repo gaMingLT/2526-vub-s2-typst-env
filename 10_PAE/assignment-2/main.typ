@@ -314,14 +314,12 @@ Increasing the complexity & number of triangles when the scenes increases, leads
   columns: (1fr, 1fr),
   column-gutter: 5pt,
   [
-    // FIXME: Make chart style & naming match previous ones!
     #figure(
       image("charts/4-parallel/total_time_comparison.pdf"),
       caption: [Total Time - Parallel vs Inline],
     ) <time-parallel-vs-inline>
   ],
   [
-    // FIXME: Make chart style & naming match previous ones!
     #figure(
       image("charts/4-parallel/speedup_comparison.pdf"),
       caption: [Speedup Total Time - Parallel vs Inline],
@@ -332,12 +330,11 @@ Increasing the complexity & number of triangles when the scenes increases, leads
 // TODO: paragraph here
 
 
-// FIXME: Add image!
 // TODO: Check charts for correctness!
-// #figure(
-//   image("charts/2-inlining/derived_metrics_comparison.pdf"),
-//   caption: [IPC, Branch, Cache Miss Rate Percentage - Inline vs Lock],
-// ) <derived-metrics-inline-vs-lock>
+#figure(
+  image("charts/4-parallel/derived_metrics_comparison.pdf"),
+  caption: [IPC, Branch, Cache Miss Rate Percentage - Parallel vs Pool],
+) <derived-metrics-parallel-vs-pool>
 
 // TODO: Talk about what is visible on the charts!
 
@@ -442,14 +439,12 @@ Included in this improvement is the addition of the `inverse` field on the `vec3
   columns: (1fr, 1fr),
   column-gutter: 5pt,
   [
-    // FIXME: Make chart style & naming match previous ones!
     #figure(
       image("charts/5-soa/total_time_comparison.pdf"),
       caption: [Total Time - SoA vs Parallel],
     ) <time-soa-vs-parallel>
   ],
   [
-    // FIXME: Make chart style & naming match previous ones!
     #figure(
       image("charts/5-soa/speedup_comparison.pdf"),
       caption: [Speedup Total Time - SoA vs Inline],
@@ -460,12 +455,11 @@ Included in this improvement is the addition of the `inverse` field on the `vec3
 // TODO: paragraph here
 
 
-// FIXME: Add image!
 // TODO: Check charts for correctness!
-// #figure(
-//   image("charts/2-inlining/derived_metrics_comparison.pdf"),
-//   caption: [IPC, Branch, Cache Miss Rate Percentage - Inline vs Lock],
-// ) <derived-metrics-inline-vs-lock>
+#figure(
+  image("charts/5-soa/derived_metrics_comparison.pdf"),
+  caption: [IPC, Branch, Cache Miss Rate Percentage - SoA vs Parallel],
+) <derived-metrics-soa-vs-parallel>
 
 // TODO: Talk about what is visible on the charts!
 
