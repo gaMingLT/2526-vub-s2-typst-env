@@ -43,8 +43,6 @@
 // Modify the spacing above a figure (codeblock), so the language annotation does not conflict with text.
 #show figure.where(): set block(above: 2em, below: 1em)
 
-// TODO: Maybe use flamegraph and use differential one to compare between implementations?
-
 
 = Intro
 
@@ -63,9 +61,8 @@ This section will discuss the improvement of removing lock contention in the pat
 
 The first problem that was identified & solved is the lock contention in the `random.c` file. When first benchmarking the application, it became clear that increasing the thread count made the application significantly slower.
 
+// TODO: Complete  todo
 Initial sourcing for this became clear after using `perf stat`, `perf record` & `strace` for which the result can be seen in (*TODO/ADD*). This same behavior is visible in @lock-before, where the gray lines between the thread activity is the thread waiting for a lock to be finished.
-
-// TODO: Add perf record & perf lock image!
 
 #figure(
   image("images/3-pool/pool-uprof/pool-base.png", width: 80%),
@@ -499,6 +496,8 @@ The latest improvements for the pathtracer is the addition of a indices based bv
 
 This section will briefly explain some of the benchmarking methodology used and why there are some diversion from the recommendations made in class. This will in addition to the executed command mention with each image. Due to `benchkit` limitation, the `cpu_list` variable was set to all cores available for each iteration. The ideal would be that the `cpu_list` matches the `nb_threads` variable but was unsuccessful in the implementation.
 
+The confidence intervals & CoV charts can be found in @charts. The only noticeable remark is the CoV values for the smallest scene 01 is outside of the recommendations. The other scenes are within acceptable range.
+
 === Base
 
 The benchmarks performed on the base version where executed with the provided `benchmark.py` file. In combination with `taskset` & `perfstat` information was collected.
@@ -530,37 +529,6 @@ Due to the limitation of benchkit  mentioned earlier or not finding a working im
 
 For this improvement the decision was made to execute *10* runs per iteration. This feels a good middle ground between detecting any instability and execution time for the benchmark. During previous benchmarks, the time variance between run _seems_ quite stable.
 
-// TODO: Keep and reference or remove?
-// #figure(
-//   // Integrated legend mapping the numbers to their detailed optimization names
-//   align(left)[
-//     #text(weight: "bold", size: 0.95em, fill: gray.darken(30%))[Step Explanations]
-//     #v(0.8em)
-
-//     #grid(
-//       columns: (1fr, 1fr),
-//       column-gutter: 2.5em,
-//       grid(
-//         columns: (auto, 1fr),
-//         column-gutter: 0.8em,
-//         row-gutter: 0.9em,
-//         text(weight: "bold", fill: gray.darken(40%))[Step 1], [Naive SoA (Baseline transition)],
-//         text(weight: "bold", fill: gray.darken(40%))[Step 2], [Optimized AABB (`aabb_ray_intersect`)],
-//         text(weight: "bold", fill: gray.darken(40%))[Step 3], [SIMD Build Regress (`aabb_for_triangles`)],
-//       ),
-//       grid(
-//         columns: (auto, 1fr),
-//         column-gutter: 0.8em,
-//         row-gutter: 0.9em,
-//         text(weight: "bold", fill: gray.darken(40%))[Step 4], [SIMD Ray Intersect (`ray_intersect`)],
-//         text(weight: "bold", fill: gray.darken(40%))[Step 5], [SIMD Split Cost (`calculate_split_cost`)],
-//         text(weight: "bold", fill: gray.darken(40%))[Step 6], [BVH Reorder + Inverse (`vec3` struct & logic)],
-//       ),
-//     )
-//   ],
-//   caption: [@simd-soa-timings Legend timings],
-// )
-
 
 === Final
 
@@ -588,22 +556,68 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
 
 Note: for the scheduling, all benchmark are executed using `taskset`. Due to `benchkit` limitation, the `taskset` cpu list is set to all available cores and the `thread`variable is varied.
 
-== Charts
+== Charts <charts>
+
 
 #figure(
-  image("charts/3-pool/tt_cov_pool.pdf"),
-  caption: [Pool - Total Time CoV (5 runs)],
+  grid(
+    columns: (1fr, 1fr),
+    column-gutter: 5pt,
+    inset: 2pt,
+    [
+      #image("charts/all/ci/ci_box.pdf")
+    ],
+    [
+      #image("charts/all/cov/cov_heatmap_box.pdf")
+    ],
+  ),
+  caption: [Scene 01 - CI & CoV],
 )
 
 
 #figure(
-  image("charts/4-parallel/tt_cov_parallel.pdf"),
-  caption: [Parallel - Total Time CoV (5 runs)],
+  grid(
+    columns: (1fr, 1fr),
+    column-gutter: 5pt,
+    inset: 2pt,
+    [
+      #image("charts/all/ci/ci_cornell-box.pdf")
+    ],
+    [
+      #image("charts/all/cov/cov_heatmap_cornell-box.pdf")
+    ],
+  ),
+  caption: [Scene 02 - CI & CoV],
 )
+
 
 #figure(
-  image("charts/5-soa/tt_cov_soa.pdf"),
-  caption: [SoA - Total Time CoV (10 runs)],
+  grid(
+    columns: (1fr, 1fr),
+    column-gutter: 5pt,
+    inset: 2pt,
+    [
+      #image("charts/all/ci/ci_cornell-spheres.pdf")
+    ],
+    [
+      #image("charts/all/cov/cov_heatmap_cornell-spheres.pdf")
+    ],
+  ),
+  caption: [Scene 04 - CI & CoV],
 )
 
-// TODO: Add for final version
+
+#figure(
+  grid(
+    columns: (1fr, 1fr),
+    column-gutter: 5pt,
+    inset: 2pt,
+    [
+      #image("charts/all/ci/ci_dragon.pdf")
+    ],
+    [
+      #image("charts/all/cov/cov_heatmap_dragon.pdf")
+    ],
+  ),
+  caption: [Scene 05 - CI & CoV],
+)
