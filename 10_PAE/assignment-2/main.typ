@@ -79,7 +79,7 @@ This behavior becomes clear when the total time of each scene is plotted vs the 
 
 #figure(
   image("images/charts/0-base/total_time_vs_thread_count.pdf", width: 80%),
-  caption: [*TODO*],
+  caption: [Total Time - Base],
 ) <base-tt_vs_thread_count>
 
 In the scenes 01, 02 and 04 increasing the thread count from 8 to 12 increases the total time taking for rendering said image. For the larger scene 05 this behavior is not as clearly visible, but there is slight increase in time when increasing the number of threads. This increase can be attributed to the use of the non reentrant safe `rand()` function.
@@ -95,7 +95,33 @@ As a fix, the `rand()` was replaced with a `xoroshiro128plusplus` implementation
 
 == Results
 
-// TODO: Add some images to show improvements in result, or something?
+The improvements in performance when the lock contention is removed is visible in @time-lock-vs-base and @speedup-lock-vs-base.
+
+// TODO: Check images for correctness!
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 5pt,
+  [
+    #figure(
+      image("images/charts/1-lock/total_time_comparison.pdf"),
+      caption: [Total time - Lock vs Base],
+    ) <time-lock-vs-base>
+  ],
+  [
+    #figure(
+      image("images/charts/1-lock/speedup_comparison.pdf"),
+      caption: [Speedup total time - Lock vs Base],
+    ) <speedup-lock-vs-base>
+  ],
+)
+
+The behavior where the speedup increases when more threads are used, clearly show the non re-entrant behavior of the original `rand()` function. The improvement in performance becomes even more clear, when looking at the IPC of the two implementations in @derived-metrics-lock-vs-base.
+
+// TODO: Check images for correctness!
+#figure(
+  image("images/charts/1-lock/derived_metrics_comparison.pdf"),
+  caption: [IPC, Branch, Cache Miss Rate Percentage - Lock & Base],
+) <derived-metrics-lock-vs-base>
 
 
 #pagebreak()
