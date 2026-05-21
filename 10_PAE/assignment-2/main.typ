@@ -75,14 +75,14 @@ Initial sourcing for this became clear after using `perf stat`, `perf record` & 
 
 Further investigating the file, the offending function was identified to be `rand()`. Looking up the man page of the function @rand, it becomes clear that the function is not thread safe and suffers from heavy lock contention in thread heavy workloads.
 
-This behavior becomes clear when the total time of each scene is plotted vs the thread count in @base-tt_vs_thread_count.
+This behavior becomes clear when the Total Time of each scene is plotted vs the thread count in @base-tt_vs_thread_count.
 
 #figure(
-  image("images/charts/0-base/total_time_vs_thread_count.pdf", width: 80%),
+  image("charts/0-base/total_time_vs_thread_count.pdf", width: 80%),
   caption: [Total Time - Base],
 ) <base-tt_vs_thread_count>
 
-In the scenes 01, 02 and 04 increasing the thread count from 8 to 12 increases the total time taking for rendering said image. For the larger scene 05 this behavior is not as clearly visible, but there is slight increase in time when increasing the number of threads. This increase can be attributed to the use of the non reentrant safe `rand()` function.
+In the scenes 01, 02 and 04 increasing the thread count from 8 to 12 increases the Total Time taking for rendering said image. For the larger scene 05 this behavior is not as clearly visible, but there is slight increase in time when increasing the number of threads. This increase can be attributed to the use of the non reentrant safe `rand()` function.
 
 
 == Solution
@@ -97,29 +97,29 @@ As a fix, the `rand()` was replaced with a `xoroshiro128plusplus` implementation
 
 The improvements in performance when the lock contention is removed is visible in @time-lock-vs-base and @speedup-lock-vs-base.
 
-// TODO: Check images for correctness!
+// TODO: Check charts for correctness!
 #grid(
   columns: (1fr, 1fr),
   column-gutter: 5pt,
   [
     #figure(
-      image("images/charts/1-lock/total_time_comparison.pdf"),
-      caption: [Total time - Lock vs Base],
+      image("charts/1-lock/total_time_comparison.pdf"),
+      caption: [Total Time - Lock vs Base],
     ) <time-lock-vs-base>
   ],
   [
     #figure(
-      image("images/charts/1-lock/speedup_comparison.pdf"),
-      caption: [Speedup total time - Lock vs Base],
+      image("charts/1-lock/speedup_comparison.pdf"),
+      caption: [Speedup Total Time - Lock vs Base],
     ) <speedup-lock-vs-base>
   ],
 )
 
 The behavior where the speedup increases when more threads are used, clearly show the non re-entrant behavior of the original `rand()` function. The improvement in performance becomes even more clear, when looking at the IPC of the two implementations in @derived-metrics-lock-vs-base.
 
-// TODO: Check images for correctness!
+// TODO: Check charts for correctness!
 #figure(
-  image("images/charts/1-lock/derived_metrics_comparison.pdf"),
+  image("charts/1-lock/derived_metrics_comparison.pdf"),
   caption: [IPC, Branch, Cache Miss Rate Percentage - Lock & Base],
 ) <derived-metrics-lock-vs-base>
 
@@ -163,25 +163,46 @@ When using the AMD μProf application in which show the profile result in @inlin
 
 The most immediate fix for this performance issue is the application of placing all the `vec3_*` function inside of the `vec3.h` file and placing the `inline` keyword before each. This 'forces' the compiler to inline the function code in every location where the code is called.
 
-// === Implementation
 
 
 == Results
 
 The benchmark results of this section are the combination of the previous improvement and this improvement applied.
 
-// TODO: Add benchmark results!
+// TODO: Check charts for correctness!
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 5pt,
+  [
+    #figure(
+      image("charts/2-inlining/total_time_comparison.pdf"),
+      caption: [Total Time - Inline vs Lock],
+    ) <time-inline-vs-lock>
+  ],
+  [
+    #figure(
+      image("charts/2-inlining/speedup_comparison.pdf"),
+      caption: [Speedup Total Time - Inline vs Lock],
+    ) <speedup-inline-vs-lock>
+  ],
+)
+
+// TODO: paragraph here
+
+
+// TODO: Check charts for correctness!
+#figure(
+  image("charts/2-inlining/derived_metrics_comparison.pdf"),
+  caption: [IPC, Branch, Cache Miss Rate Percentage - Inline vs Lock],
+) <derived-metrics-inline-vs-lock>
+
+// TODO: Talk about what is visible on the charts!
 
 #pagebreak()
 = Improvement 3: Thread Pooling
 
-// Explain the process of adding a thread pool to better share the workload during rendering
 
 This section will discuss the implementation of adding a thread pool which contains image rendering tasks. Each task will be responsible for a square tile of the image to be rendered.
-
-
-// == Analysis
-
 
 
 == Problem
@@ -236,7 +257,34 @@ Included in the pooling modifications is the addition of the `ray_color2_soa` an
 
 == Results
 
-TODO: Results here!
+// TODO: Check charts for correctness!
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 5pt,
+  [
+    #figure(
+      image("charts/3-pool/total_time_comparison.pdf"),
+      caption: [Total Time - Pool vs Inline],
+    ) <time-pool-vs-inline>
+  ],
+  [
+    #figure(
+      image("charts/3-pool/speedup_comparison.pdf"),
+      caption: [Speedup Total Time - Pool vs Inline],
+    ) <speedup-pool-vs-inline>
+  ],
+)
+
+// TODO: paragraph here
+
+
+// TODO: Check charts for correctness!
+#figure(
+  image("charts/3-pool/derived_metrics_comparison.pdf"),
+  caption: [IPC, Branch, Cache Miss Rate Percentage - Pool vs Inline],
+) <derived-metrics-pool-vs-inline>
+
+// TODO: Talk about what is visible on the charts!
 
 
 #pagebreak()
@@ -261,6 +309,37 @@ Increasing the complexity & number of triangles when the scenes increases, leads
 
 == Results
 
+// TODO: Check charts for correctness!
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 5pt,
+  [
+    // FIXME: Make chart style & naming match previous ones!
+    #figure(
+      image("charts/4-parallel/total_time_comparison.pdf"),
+      caption: [Total Time - Parallel vs Inline],
+    ) <time-parallel-vs-inline>
+  ],
+  [
+    // FIXME: Make chart style & naming match previous ones!
+    #figure(
+      image("charts/4-parallel/speedup_comparison.pdf"),
+      caption: [Speedup Total Time - Parallel vs Inline],
+    ) <speedup-parallel-vs-inline>
+  ],
+)
+
+// TODO: paragraph here
+
+
+// FIXME: Add image!
+// TODO: Check charts for correctness!
+// #figure(
+//   image("charts/2-inlining/derived_metrics_comparison.pdf"),
+//   caption: [IPC, Branch, Cache Miss Rate Percentage - Inline vs Lock],
+// ) <derived-metrics-inline-vs-lock>
+
+// TODO: Talk about what is visible on the charts!
 
 
 
@@ -357,7 +436,38 @@ Included in this improvement is the addition of the `inverse` field on the `vec3
 
 == Results
 
-// TODO: Add results
+
+// TODO: Check charts for correctness!
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 5pt,
+  [
+    // FIXME: Make chart style & naming match previous ones!
+    #figure(
+      image("charts/5-soa/total_time_comparison.pdf"),
+      caption: [Total Time - SoA vs Parallel],
+    ) <time-soa-vs-parallel>
+  ],
+  [
+    // FIXME: Make chart style & naming match previous ones!
+    #figure(
+      image("charts/5-soa/speedup_comparison.pdf"),
+      caption: [Speedup Total Time - SoA vs Inline],
+    ) <speedup-soa-vs-parallel>
+  ],
+)
+
+// TODO: paragraph here
+
+
+// FIXME: Add image!
+// TODO: Check charts for correctness!
+// #figure(
+//   image("charts/2-inlining/derived_metrics_comparison.pdf"),
+//   caption: [IPC, Branch, Cache Miss Rate Percentage - Inline vs Lock],
+// ) <derived-metrics-inline-vs-lock>
+
+// TODO: Talk about what is visible on the charts!
 
 
 
@@ -369,7 +479,9 @@ Included in this improvement is the addition of the `inverse` field on the `vec3
 == Results
 
 
+= Overview
 
+// TODO: Compare between all improvements add some charts, but keep it manageable
 
 
 = Conclusion
