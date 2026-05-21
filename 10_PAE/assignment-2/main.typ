@@ -45,17 +45,11 @@
 
 // TODO: Maybe use flamegraph and use differential one to compare between implementations?
 
-// #colbreak()
+
 = Intro
 
-// Explain structure of report
+This report will discuss the improvements made to the CPU based pathtracer for Assignment-2 of the course: 'Performance Analysis & Evaluation'. Each major improvement will be discussed in their respective sections. Finally, the latest version of the implementation will be thoroughly discussed in @final. The methodology section discussing deviations from the standard per improvement section can be found in @methodology.
 
-This report will discuss the improvements made to the CPU based pathtracer for Assignment-2 of the course: 'Performance Analysis & Evaluation'. Each major improvement will be discussed in their respective sections. A collection of miscellaneous improvements will be discussed in @misc-improvement. Finally, the latest version of the implementation will be thoroughly discussed in @benchmarking.
-
-
-// = Base Version
-
-// Short analysis of base version results?
 
 
 = Improvement 1: Lock Contention
@@ -93,53 +87,9 @@ In the scenes 01, 02 and 04 increasing the thread count from 8 to 12 increases t
 
 == Solution
 
-// Included in the man page of the `rand()` function is a recommendation to use the safe function `rand_r()`, but this function seems to require enabling some posix standard and is deprecated.
+Included in the man page of the `rand()` function is a recommendation to use the safe function `rand_r()`, but this function seems to require enabling some posix standard and is deprecated.
 
-// The recommendation from online forum is a random value per  thread using a thread local variable see in @random-seed-thread-local.
-
-// #figure(
-//   zebraw(
-//     lang: false,
-//     // numbering: false,
-//     ```c
-//     static __thread uint32_t tls_seed = 0;
-//     ```,
-//   ),
-//   caption: [],
-// ) <random-seed-thread-local>
-
-// In combination with `xorshift32` from @xorshift32 as shown in @xorshift.
-
-// #figure(
-//   zebraw(
-//     lang: false,
-//     // numbering: false,
-//     ```c
-//     static uint32_t xorshift32(void) {
-//       if (tls_seed == 0)
-//         tls_seed = (uint32_t)(uintptr_t)pthread_self() ^ (uint32_t)time(NULL);
-//       tls_seed ^= tls_seed << 13;
-//       tls_seed ^= tls_seed >> 17;
-//       tls_seed ^= tls_seed << 5;
-//       return tls_seed;
-//     }
-//     ```,
-//   ),
-//   caption: [],
-// ) <xorshift>
-
-// With the updated `random_double()` shown in @randomdouble-updated, there are some additional operations on the result and multiplication to further increase the randomness of the result.
-
-// #figure(
-//   zebraw(
-//     lang: false,
-//     // numbering: false,
-//     ```c
-//     double random_double(void) { return (xorshift32() >> 8) * (1.0 / 16777216.0); }
-//     ```,
-//   ),
-//   caption: [],
-// ) <randomdouble-updated>
+As a fix, the `rand()` was replaced with a `xoroshiro128plusplus` implementation based on @xorshiroplusplus and `splitmix` for seeding the random number generator @splitmix.
 
 
 
@@ -232,67 +182,6 @@ Specifically the end of the timeline of the renderer is import. There is can be 
 
 Depending on the image to be rendered, some vertical slices may have less work than other vertical slices. Additionally, the last vertical slice of the image is padded so it rendered the full with of the image.
 
-#figure(
-  zebraw(
-    lang: false,
-    highlight-lines: (
-      ..range(9, 11),
-      (10, [The thread padding alluded to earlier, resulting in uneven work shared.]),
-    ),
-    // numbering: false,
-    ```c
-    // renderer_render
-    // (...)
-    for (int thread = 0; thread < renderer->threads; thread++)
-    {
-        thread_infos[thread].renderer = renderer;
-        thread_infos[thread].width_start = thread * width_per_thread;
-        if (thread == renderer->threads - 1)
-        {
-            // The last thread will take care of any remaining pixels if the width is not perfectly divisible by the number of threads.
-            thread_infos[thread].width_end = renderer->width;
-        }
-        else
-        {
-            thread_infos[thread].width_end = (thread + 1) * width_per_thread;
-        }
-
-        pthread_create(&threads[thread], NULL, (void *(*)(void *))renderer_render_part, &thread_infos[thread]);
-    }
-    // (...)
-    ```,
-  ),
-  caption: [],
-) <thread-code-before>
-
-
-As is visible in @thread-code-before, the behavior mentioned earlier is visible. And the vertical slice behavior in @vertical-slice-code-before.
-
-#figure(
-  zebraw(
-    lang: false,
-    // numbering: false,
-    ```c
-    // renderer_render_part
-    // (...)
-    for (int w = width_start; w < width_end; w++)
-    {
-        for (int h = 0; h < renderer->height; h++)
-        {
-            struct vec3 *color = &renderer->framebuffer[w + h * renderer->width];
-
-            for (int sample = 0; sample < renderer->scene->samples; sample++)
-            {
-                render_pixel(renderer, color, w, h);
-            }
-        }
-    }
-    // (...)
-    ```,
-  ),
-  caption: [],
-) <vertical-slice-code-before>
-
 == Solution
 
 // TODO: Add some source also
@@ -316,16 +205,12 @@ The improvement in evenly shared work between the threads can be seen in @pool-u
   ) <pool-updated>
 ]
 
-=== Implementation
-
-// TODO: Continue here!
-
-*TODO:* also mentioned the pixel lanes & SoA of the frame buffer!
+Included in the pooling modifications is the addition of the `ray_color2_soa` and packing the results of several ray's in an array. The framebuffer of the image has also been transformed into a SoA layout.
 
 
-// == Results
+== Results
 
-// TODO: Results here!
+TODO: Results here!
 
 
 #pagebreak()
@@ -344,6 +229,12 @@ Increasing the complexity & number of triangles when the scenes increases, leads
 // TODO: Add image: build time increasing for large scenes.
 
 
+== Solution
+
+
+
+== Results
+
 
 
 
@@ -358,8 +249,7 @@ This section will discuss the application of transforming data layout from a AoS
 
 == Problem
 
-
-
+The problem to be solved is the usage of linked list, which makes use of next pointers to keep track of elements in the linked list. While also transforming the data from a AoS to a SoA allowing for application of SIMD somewhere in the data path.
 
 
 
@@ -446,21 +336,11 @@ Included in this improvement is the addition of the `inverse` field on the `vec3
 
 
 #pagebreak()
-= Final & Miscellaneous improvements <misc-improvement>
+= Final <final>
 
-// List of miscellaneous  (minor) improvements
+== Improvement
 
-// - render pixel, 'lanes', store, multiple samples together
-// - post process pixels add the end using SIMD
-// - reordering of `bvh_ray_intersect`
-// - addition of inverse on `vec3` and `aabb_ray_intersect`
-
-
-#pagebreak()
-= Benchmarking <benchmarking>
-
-// Analyze the performance of current implementation
-
+== Results
 
 
 
@@ -474,7 +354,7 @@ Included in this improvement is the addition of the `inverse` field on the `vec3
 #pagebreak()
 = Appendix
 
-== Methodology
+== Methodology <methodology>
 
 This section will briefly explain some of the benchmarking methodology used and why there are some diversion from the recommendations made in class. This will in addition to the executed command mention with each image. Due to `benchkit` limitation, the `cpu_list` variable was set to all cores available for each iteration. The ideal would be that the `cpu_list` matches the `nb_threads` variable but was unsuccessful in the implementation.
 
@@ -509,35 +389,36 @@ Due to the limitation of benchkit  mentioned earlier or not finding a working im
 
 For this improvement the decision was made to execute *10* runs per iteration. This feels a good middle ground between detecting any instability and execution time for the benchmark. During previous benchmarks, the time variance between run _seems_ quite stable.
 
-#figure(
-  // Integrated legend mapping the numbers to their detailed optimization names
-  align(left)[
-    #text(weight: "bold", size: 0.95em, fill: gray.darken(30%))[Step Explanations]
-    #v(0.8em)
+// TODO: Keep and reference or remove?
+// #figure(
+//   // Integrated legend mapping the numbers to their detailed optimization names
+//   align(left)[
+//     #text(weight: "bold", size: 0.95em, fill: gray.darken(30%))[Step Explanations]
+//     #v(0.8em)
 
-    #grid(
-      columns: (1fr, 1fr),
-      column-gutter: 2.5em,
-      grid(
-        columns: (auto, 1fr),
-        column-gutter: 0.8em,
-        row-gutter: 0.9em,
-        text(weight: "bold", fill: gray.darken(40%))[Step 1], [Naive SoA (Baseline transition)],
-        text(weight: "bold", fill: gray.darken(40%))[Step 2], [Optimized AABB (`aabb_ray_intersect`)],
-        text(weight: "bold", fill: gray.darken(40%))[Step 3], [SIMD Build Regress (`aabb_for_triangles`)],
-      ),
-      grid(
-        columns: (auto, 1fr),
-        column-gutter: 0.8em,
-        row-gutter: 0.9em,
-        text(weight: "bold", fill: gray.darken(40%))[Step 4], [SIMD Ray Intersect (`ray_intersect`)],
-        text(weight: "bold", fill: gray.darken(40%))[Step 5], [SIMD Split Cost (`calculate_split_cost`)],
-        text(weight: "bold", fill: gray.darken(40%))[Step 6], [BVH Reorder + Inverse (`vec3` struct & logic)],
-      ),
-    )
-  ],
-  caption: [@simd-soa-timings Legend timings],
-)
+//     #grid(
+//       columns: (1fr, 1fr),
+//       column-gutter: 2.5em,
+//       grid(
+//         columns: (auto, 1fr),
+//         column-gutter: 0.8em,
+//         row-gutter: 0.9em,
+//         text(weight: "bold", fill: gray.darken(40%))[Step 1], [Naive SoA (Baseline transition)],
+//         text(weight: "bold", fill: gray.darken(40%))[Step 2], [Optimized AABB (`aabb_ray_intersect`)],
+//         text(weight: "bold", fill: gray.darken(40%))[Step 3], [SIMD Build Regress (`aabb_for_triangles`)],
+//       ),
+//       grid(
+//         columns: (auto, 1fr),
+//         column-gutter: 0.8em,
+//         row-gutter: 0.9em,
+//         text(weight: "bold", fill: gray.darken(40%))[Step 4], [SIMD Ray Intersect (`ray_intersect`)],
+//         text(weight: "bold", fill: gray.darken(40%))[Step 5], [SIMD Split Cost (`calculate_split_cost`)],
+//         text(weight: "bold", fill: gray.darken(40%))[Step 6], [BVH Reorder + Inverse (`vec3` struct & logic)],
+//       ),
+//     )
+//   ],
+//   caption: [@simd-soa-timings Legend timings],
+// )
 
 
 === Final
