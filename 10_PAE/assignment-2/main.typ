@@ -578,3 +578,23 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
 ) <desktop>
 
 Note: for the scheduling, all benchmark are executed using `taskset`. Due to `benchkit` limitation, the `taskset` cpu list is set to all available cores and the `thread`variable is varied.
+
+== Charts
+
+#figure(
+  image("charts/3-pool/tt_cov_pool.pdf"),
+  caption: [Pool - Total Time CoV (5 runs)],
+)
+
+
+#figure(
+  image("charts/4-parallel/tt_cov_parallel.pdf"),
+  caption: [Parallel - Total Time CoV (5 runs)],
+)
+
+#figure(
+  image("charts/5-soa/tt_cov_soa.pdf"),
+  caption: [SoA - Total Time CoV (10 runs)],
+)
+
+// TODO: Add for final version
