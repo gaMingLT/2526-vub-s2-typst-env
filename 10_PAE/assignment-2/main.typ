@@ -528,6 +528,12 @@ The latest improvements for the pathtracer is the addition of a indices based bv
 )
 
 
+#figure(
+  image("charts/all/usl_fit.pdf"),
+  caption: [Universal Scaling Law: Scene x Threads],
+)
+
+
 
 = Conclusion
 
