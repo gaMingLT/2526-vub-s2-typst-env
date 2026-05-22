@@ -523,16 +523,10 @@ The latest improvements for the pathtracer is the addition of a indices based bv
 // TODO: Check charts for correctness!
 
 #figure(
-  image("charts/all/speedup_heatmap_1_vs_20thr.pdf"),
-  caption: [],
+  image("charts/all/speedup_vs_base.pdf"),
+  caption: [Geometric Mean Speedup, Per Stage & Scene (1, 20, 32 threads)],
 )
 
-
-// TODO: Check charts for correctness!
-#figure(
-  image("charts/all/speedup_heatmap_scaling.pdf", width: 80%),
-  caption: [],
-)
 
 
 = Conclusion
