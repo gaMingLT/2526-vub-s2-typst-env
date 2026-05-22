@@ -479,14 +479,65 @@ The latest improvements for the pathtracer is the addition of a indices based bv
 
 // - greater benefit on the large image compared to smaller images
 
+// TODO: Check charts for correctness!
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 5pt,
+  [
+    #figure(
+      image("charts/6-final/total_time_comparison.pdf"),
+      caption: [Total Time - Final vs SoA],
+    )
+  ],
+  [
+    #figure(
+      image("charts/6-final/speedup_comparison.pdf"),
+      caption: [Speedup Total Time - Final vs SoA],
+    )
+  ],
+)
+
+// TODO: paragraph here
+
+
+// TODO: Check charts for correctness!
+#figure(
+  image("charts/6-final/derived_metrics_comparison.pdf"),
+  caption: [IPC, Branch, Cache Miss Rate Percentage - Final vs SoA],
+)
+
+// TODO: Talk about what is visible on the charts!
+
+
 = Overview
 
-// TODO: Compare between all improvements add some charts, but keep it manageable
+
+// TODO: Check charts for correctness!
+#figure(
+  image("charts/all/tt_per_stage.pdf"),
+  caption: [],
+)
+
+
+
+// TODO: Check charts for correctness!
+
+#figure(
+  image("charts/all/speedup_heatmap_1_vs_20thr.pdf"),
+  caption: [],
+)
+
+
+// TODO: Check charts for correctness!
+#figure(
+  image("charts/all/speedup_heatmap_scaling.pdf", width: 80%),
+  caption: [],
+)
 
 
 = Conclusion
 
-// Overall conclusion
+// Overall
 
 
 #pagebreak()
