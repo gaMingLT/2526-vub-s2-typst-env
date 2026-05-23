@@ -61,13 +61,49 @@ This section will discuss the improvement of removing lock contention in the pat
 
 The first problem that was identified & solved is the lock contention in the `random.c` file. When first benchmarking the application, it became clear that increasing the thread count made the application significantly slower.
 
-// TODO: Complete  todo
-Initial sourcing for this became clear after using `perf stat`, `perf record` & `strace` for which the result can be seen in (*TODO/ADD*). This same behavior is visible in @lock-before, where the gray lines between the thread activity is the thread waiting for a lock to be finished.
+Initial sourcing for this became clear after using `perf stat`, `perf record` & `strace` for which the result can be seen in @perf-annotate-lock. For scene 04, with 20 threads: (04-20).
 
-#figure(
-  image("images/3-pool/pool-uprof/pool-base.png", width: 80%),
-  caption: [AMD μProf - Lock Contention Threads ],
-) <lock-before>
+
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 5pt,
+  [
+    #figure(
+      image("images/1-lock/select-perf-record-lock-02-04.png"),
+      caption: [Perf Record - Overhead (04-20)],
+    )
+  ],
+  [
+    #figure(
+      image("images/1-lock/select-perf-record-lock-02-10-annotate.png"),
+      caption: [Perf Annotate - Lock (04-20)],
+    ) <perf-annotate-lock>
+  ],
+)
+
+
+
+This same behavior is visible in @lock-before, where the gray lines between the thread activity is the thread waiting for a lock to be finished.
+
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 5pt,
+  [
+    #figure(
+      image("images/1-lock/select-uprof-base-04-20.png"),
+      caption: [AMD μProf - Lock Time (04-20)],
+    )
+  ],
+  [
+    #figure(
+      image("images/3-pool/pool-uprof/pool-base.png"),
+      caption: [AMD μProf - Lock Contention Threads (04-20)],
+    ) <lock-before>
+  ],
+)
+
+
+
 
 
 Further investigating the file, the offending function was identified to be `rand()`. Looking up the man page of the function @rand, it becomes clear that the function is not thread safe and suffers from heavy lock contention in thread heavy workloads.
@@ -94,7 +130,7 @@ As a fix, the `rand()` was replaced with a `xoroshiro128plusplus` implementation
 
 The improvements in performance when the lock contention is removed is visible in @time-lock-vs-base and @speedup-lock-vs-base.
 
-// TODO: Check charts for correctness!
+
 #grid(
   columns: (1fr, 1fr),
   column-gutter: 5pt,
@@ -117,7 +153,7 @@ The behavior where the speedup increases when more threads are used, clearly sho
 
 The improvement in performance becomes even more clear, when looking at the IPC of the two implementations in @derived-metrics-lock-vs-base.
 
-// TODO: Check charts for correctness!
+
 #figure(
   image("charts/1-lock/derived_metrics_comparison.pdf"),
   caption: [IPC, Branch, Cache Miss Rate Percentage - Lock & Base],
@@ -126,8 +162,6 @@ The improvement in performance becomes even more clear, when looking at the IPC 
 
 #pagebreak()
 = Improvement 2: Inlining
-
-// Explain the practice of inlining the `vec3*` operations
 
 This section will discuss the process of inlining @inlining compute & time intensive operations to improve performance.
 
@@ -139,15 +173,14 @@ What became clear during the previous improvement & looking at the code, is the 
   columns: (1fr, 1fr),
   column-gutter: 5pt,
 )[
-  // TODO: Fix image
   #figure(
     image("images/2-inlining/select-perf-record-base-inline-02-04.png"),
-    caption: [...],
+    caption: [Perf Record - Overhead Vec3 (02-20)],
   ) <inlining-base-perf-1>
 ][
   #figure(
     image("images/2-inlining/select-perf-record-base-inline-04-04.png"),
-    caption: [...],
+    caption: [ Perf Record - Overhead Vec3],
   ) <inlining-base-perf-2>
 ]
 
@@ -155,7 +188,7 @@ When using the AMD μProf application in which show the profile result in @inlin
 
 #figure(
   image("images/2-inlining/select-uprof-base-inline-04-20.png", width: 80%),
-  caption: [...],
+  caption: [ AMD μProf - Vec3 Operations Time (04-20) ],
 ) <inlining-base-amd-uprof>
 
 
@@ -169,7 +202,10 @@ The most immediate fix for this performance issue is the application of placing 
 
 The benchmark results of this section are the combination of the previous improvement and this improvement applied.
 
-// TODO: Check charts for correctness!
+Both the time and speedup are again charted in @time-inline-vs-lock, @speedup-inline-vs-lock respectively. Note, that for the speedup in @speedup-inline-vs-lock, the 'speedup' is compared against the time available of the lowest thread count value.
+
+
+
 #grid(
   columns: (1fr, 1fr),
   column-gutter: 5pt,
@@ -187,16 +223,37 @@ The benchmark results of this section are the combination of the previous improv
   ],
 )
 
-// TODO: paragraph here
+Across the boards we see a general reduction in the time needed for rendering all scenes. The increase in time when increasing the thread count for scene 02 is visible in both states.
+
+The speedup behavior of the application between both versions does not drastically change, with the lowest scenes almost all completely matching each other. Only for the scene 05, there is slightly more efficient usage of more threads.
+
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 5pt,
+  [
+    #figure(
+      image("charts/1-lock/total_time_rel_diff.pdf"),
+      caption: [Total Time Relative Difference - Lock vs Base],
+    ) <tt-rel-diff-lock>
+  ],
+  [
+    #figure(
+      image("charts/2-inlining/total_time_rel_diff.pdf"),
+      caption: [Total Time Relative Difference - Inline vs Lock],
+    ) <tt-rel-diff-inline>
+  ],
+)
+
+These results do not particularly surprise, since the change does not concern itself with more efficient thread usage. The difference in time reduction between thread count is clear when looking at the relative differences in @tt-rel-diff-lock & @tt-rel-diff-inline.
 
 
-// TODO: Check charts for correctness!
+
 #figure(
   image("charts/2-inlining/derived_metrics_comparison.pdf"),
   caption: [IPC, Branch, Cache Miss Rate Percentage - Inline vs Lock],
 ) <derived-metrics-inline-vs-lock>
 
-// TODO: Talk about what is visible on the charts!
+For all scenes, there is a _'large'_ increase in the number of miss branch prediction rate. While the cache miss rate is within margins. For the IPC, there is a large reduction to note for the largest scene 05.
 
 #pagebreak()
 = Improvement 3: Thread Pooling
@@ -209,7 +266,6 @@ This section will discuss the implementation of adding a thread pool which conta
 
 Analyzing the application, using the AMD μProf @amd_uprof application, and viewing the thread section, shows the behavior visible in @pool-before.
 
-// TODO: More here!
 Specifically the end of the timeline of the renderer is import. There is can be seen that the rendered splits the image in non equal work vertical slices as illustrated in @thread-util-before.
 
 
@@ -240,15 +296,14 @@ The improvement in evenly shared work between the threads can be seen in @pool-u
   columns: (1fr, 1fr),
   column-gutter: 5pt,
 )[
-  // TODO: Fix image
   #figure(
     image("images/3-pool/pool-tilling/PAE-AS2-Tiling-New.png"),
-    caption: [...],
+    caption: [Image Slicing - Vertical Slices],
   ) <thread-util-after>
 ][
   #figure(
     image("images/3-pool/pool-uprof/pool-updated.png"),
-    caption: [...],
+    caption: [AMD μProf - Thread(s) Non Idling Timeline (04-20)],
   ) <pool-updated>
 ]
 
@@ -257,7 +312,9 @@ Included in the pooling modifications is the addition of the `ray_color2_soa` an
 
 == Results
 
-// TODO: Check charts for correctness!
+// FIXME: Continue here
+
+
 #grid(
   columns: (1fr, 1fr),
   column-gutter: 5pt,
@@ -290,8 +347,6 @@ Included in the pooling modifications is the addition of the `ray_color2_soa` an
 #pagebreak()
 = Improvement 4: Parallel Build
 
-// Explain the process of multi threaded `bvh_build`
-
 This section will focus on making the `bvh_build` initialization function faster, by applying fork-join like multi-threading to the build process.
 
 
@@ -305,10 +360,11 @@ Increasing the complexity & number of triangles when the scenes increases, leads
 
 == Solution
 
-
+This solution consists, of using a separate thread to compute the right side of the current node, while the current thread computes the left side. There is a spawn parallel condition, which guards between the thread overhead creation and compute remaining.
 
 == Results
 
+// FIXME: Check chart data, should be improving mere?
 // TODO: Check charts for correctness!
 #grid(
   columns: (1fr, 1fr),
@@ -474,10 +530,13 @@ This section will discuss the final version of the pathtracer.
 
 The latest improvements for the pathtracer is the addition of a indices based bvh build step. This step is more focused on the reduction of the memory usage, particularly for scene 05. Where original, for the implementation in @soa, the maxium memory usage sits around $~$12GB. The added benefit is also a slight improvement in performance during the render time of the image, while build time is the same.
 
+// TODO: Rewrite
+During the bvh build step, instead of allocating memory for each leaf of a node, indices are sorted and passed to their respective child nodes while the main triangles list is used through the build process. When a leaf node is reached, the list of indices is used to load and allocated memory into the leaf nodes triangle list.
+
 
 == Results
 
-// - greater benefit on the large image compared to smaller images
+This section will analyze the different improves applied on the pathtracer application and the overall impact on application behavior.
 
 // TODO: Check charts for correctness!
 #grid(
