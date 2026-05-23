@@ -536,7 +536,6 @@ During the bvh build step, instead of allocating memory for each leaf of a node,
 
 == Results
 
-This section will analyze the different improves applied on the pathtracer application and the overall impact on application behavior.
 
 // TODO: Check charts for correctness!
 #grid(
@@ -570,33 +569,50 @@ This section will analyze the different improves applied on the pathtracer appli
 
 = Overview
 
+This section will analyze the different improves applied on the pathtracer application and the overall impact on application behavior.
 
+The first look will be at the change in total time each scene & stage take in @tt-per-stage.
+
+
+// FIXME: At which thread count is this?
+// FIXME: Check the data
 // TODO: Check charts for correctness!
 #figure(
   image("charts/all/tt_per_stage.pdf"),
   caption: [],
-)
+) <tt-per-stage>
 
 
+What is clear for the smallest scene 01, is that from the pool improvement on, each following improvement seems to have a negative impact on the time. This might be attributed to the overhead for the new features dominating. While for the larger scenes (02,04,05), all improvements indicate to have a positive improvement on execution time. With the `lock` improvement seeming to have the largest impact, followed by `inline`.
+
+Charting the speedup of each stage relative to the base version, for 3 different thread count (1,20,32), can be seen in @gmean-speedup-overview. The analysis makes use of the geometric mean as seen in class (*TODO: add reference*).
 
 // TODO: Check charts for correctness!
-
 #figure(
   image("charts/all/speedup_vs_base.pdf"),
   caption: [Geometric Mean Speedup, Per Stage & Scene (1, 20, 32 threads)],
-)
+) <gmean-speedup-overview>
+
+Due to choices made in data collection, mentioned in @methodology, the 32 thread count chart is incomplete, any conclusions should be guarded. The charts for the 1 & 20 thread count chart, allow for a clear differentiating in speedup between single thread & multi-threaded behavior of the application.
+
+// TODO: More for gmean speedup
 
 
+
+// FIXME: Is this a proper way to use a USL chart?
+// NOTE: Amdahl Law might just be enough
+// TODO: Check charts for correctness!
 #figure(
   image("charts/all/usl_fit.pdf"),
   caption: [Universal Scaling Law: Scene x Threads],
-)
+) <usl-overview>
 
 
 
 = Conclusion
 
 // Overall
+// TODO: Some notes here, or remove?
 
 
 #pagebreak()
