@@ -312,8 +312,7 @@ Included in the pooling modifications is the addition of the `ray_color2_soa` an
 
 == Results
 
-// FIXME: Continue here
-
+There is _small_ reduction in execution time for all scenes with the added improvement, as show in @time-pool-vs-inline. For scene 02, the 'bulge' that is visible for the treads 16,28 has been eliminated. On glance, the greatest impact of the pool on the execution time is for the largest scene, scene 05.
 
 #grid(
   columns: (1fr, 1fr),
@@ -332,8 +331,11 @@ Included in the pooling modifications is the addition of the `ray_color2_soa` an
   ],
 )
 
-// TODO: paragraph here
+Look at the speedup in @speedup-pool-vs-inline, the efficiency of using more threads has been increased, with an overall much better usage for scene 02, where the reduction for the 20,24, threads has been eliminated.
 
+White the pool improvement added, the positioning of each takes a position in the respective charts and a more clear distinction between scenes is visible.
+
+For the IPC, the lowest bound on scene-05 for 32 threads, compared to the previous improvement has been reduced from $~$1.2 to $~$1.1.
 
 // TODO: Check charts for correctness!
 #figure(
@@ -341,7 +343,7 @@ Included in the pooling modifications is the addition of the `ray_color2_soa` an
   caption: [IPC, Branch, Cache Miss Rate Percentage - Pool vs Inline],
 ) <derived-metrics-pool-vs-inline>
 
-// TODO: Talk about what is visible on the charts!
+// TODO: A bit more here, talk about what is visible on the charts!
 
 
 #pagebreak()
@@ -364,6 +366,8 @@ This solution consists, of using a separate thread to compute the right side of 
 
 == Results
 
+For the parallel improvement, the total time reduction for the smaller scenes is not really noticeable. With time plots for the scenes 01,02 and 04 matchiin their previous version. The largest reduction in execution time is for scene 05, as can be seen in @time-parallel-vs-pool.
+
 // FIXME: Check chart data, should be improving mere?
 // TODO: Check charts for correctness!
 #grid(
@@ -372,18 +376,18 @@ This solution consists, of using a separate thread to compute the right side of 
   [
     #figure(
       image("charts/4-parallel/total_time_comparison.pdf"),
-      caption: [Total Time - Parallel vs Inline],
-    ) <time-parallel-vs-inline>
+      caption: [Total Time - Parallel vs Pool],
+    ) <time-parallel-vs-pool>
   ],
   [
     #figure(
       image("charts/4-parallel/speedup_comparison.pdf"),
-      caption: [Speedup Total Time - Parallel vs Inline],
-    ) <speedup-parallel-vs-inline>
+      caption: [Speedup Total Time - Parallel vs Pool],
+    ) <speedup-parallel-vs-pool>
   ],
 )
 
-// TODO: paragraph here
+For the speedup @speedup-parallel-vs-pool, the greatest improvement in efficiency is again for scene 05. Where the efficiency of more threads has made quite a big jump.
 
 
 // TODO: Check charts for correctness!
@@ -392,8 +396,9 @@ This solution consists, of using a separate thread to compute the right side of 
   caption: [IPC, Branch, Cache Miss Rate Percentage - Parallel vs Pool],
 ) <derived-metrics-parallel-vs-pool>
 
-// TODO: Talk about what is visible on the charts!
+There are no things to note for the IPC, Branch, Cache Miss Rate, with the addition of the new improvement.
 
+Above behavior is what could be expected when looking at the implementation and is also what the problem identified earlier tried to solve. Reducing the build phase of the `bvh` tree, which could be considered a success when looking at the above charts.
 
 
 
@@ -489,6 +494,7 @@ Included in this improvement is the addition of the `inverse` field on the `vec3
 
 == Results
 
+The overall execution time with the addition of the SoA & application of SIMD to selective functions has marginally reduced the execution time overall, as seen in @time-soa-vs-parallel. Since the improvement does not partially pertain to more efficiency use of threads, the speedup factors between the version in @speedup-soa-vs-parallel, could be considered identical.
 
 // TODO: Check charts for correctness!
 #grid(
@@ -508,7 +514,7 @@ Included in this improvement is the addition of the `inverse` field on the `vec3
   ],
 )
 
-// TODO: paragraph here
+The derived metrics from the `perf stat` wrapper can again be viewed in @derived-metrics-soa-vs-parallel.
 
 
 // TODO: Check charts for correctness!
@@ -517,7 +523,10 @@ Included in this improvement is the addition of the `inverse` field on the `vec3
   caption: [IPC, Branch, Cache Miss Rate Percentage - SoA vs Parallel],
 ) <derived-metrics-soa-vs-parallel>
 
-// TODO: Talk about what is visible on the charts!
+
+The most notable change on the charts to note, is the increase in the IPC for scene-05. With the single thread IPC going from $~1,50$ to $~1.75$
+
+Across all the scenes and for all metrics, starting from thread cont 16, there is an increase in the Branch mis prediction rate, decrease in cache-miss rate, but a decrease in IPC.
 
 
 
@@ -536,6 +545,7 @@ During the bvh build step, instead of allocating memory for each leaf of a node,
 
 == Results
 
+For the execution time in @time-final-vs-soa, is about the same as before. The smaller to medium scenes so no real improvement, with the smallest scene event seeing an increase in execution time. While the largest scenes has the largest reduction in execution time.
 
 // TODO: Check charts for correctness!
 #grid(
@@ -545,29 +555,33 @@ During the bvh build step, instead of allocating memory for each leaf of a node,
     #figure(
       image("charts/6-final/total_time_comparison.pdf"),
       caption: [Total Time - Final vs SoA],
-    )
+    ) <time-final-vs-soa>
   ],
   [
     #figure(
       image("charts/6-final/speedup_comparison.pdf"),
       caption: [Speedup Total Time - Final vs SoA],
-    )
+    ) <speedup-final-vs-soa>
   ],
 )
 
-// TODO: paragraph here
+There are again no real changes in the speedup charts with the new addition as shown in @speedup-final-vs-soa.
+
+The derived metrics are visible in @derived-metrics-final-vs-soa. The most positive thing to note is that for the larger scenes (04,05), the cache miss rate Percentage has seen a large decrease. For scene 04; going from around 20% to < 10% and for scene 05; going from around 25% to < 20%.
 
 
 // TODO: Check charts for correctness!
 #figure(
   image("charts/6-final/derived_metrics_comparison.pdf"),
   caption: [IPC, Branch, Cache Miss Rate Percentage - Final vs SoA],
-)
+) <derived-metrics-final-vs-soa>
 
-// TODO: Talk about what is visible on the charts!
+The improvement has a negative impact on the IPC for the scene 01,02,04, a positive impact for the larger scene 05. All scenes, due have an increase in the branch miss prediction rate compared to the SoA version.
 
 
-= Overview
+
+#pagebreak()
+= Conclusion
 
 This section will analyze the different improves applied on the pathtracer application and the overall impact on application behavior.
 
@@ -585,7 +599,7 @@ The first look will be at the change in total time each scene & stage take in @t
 
 What is clear for the smallest scene 01, is that from the pool improvement on, each following improvement seems to have a negative impact on the time. This might be attributed to the overhead for the new features dominating. While for the larger scenes (02,04,05), all improvements indicate to have a positive improvement on execution time. With the `lock` improvement seeming to have the largest impact, followed by `inline`.
 
-Charting the speedup of each stage relative to the base version, for 3 different thread count (1,20,32), can be seen in @gmean-speedup-overview. The analysis makes use of the geometric mean as seen in class (*TODO: add reference*).
+Charting the speedup of each stage relative to the base version, for 3 different thread count (1,20,32), can be seen in @gmean-speedup-overview. The analysis makes use of the geometric mean as seen in class @paae_gmean_summary.
 
 // TODO: Check charts for correctness!
 #figure(
@@ -609,7 +623,7 @@ Due to choices made in data collection, mentioned in @methodology, the 32 thread
 
 
 
-= Conclusion
+// = Conclusion
 
 // Overall
 // TODO: Some notes here, or remove?
