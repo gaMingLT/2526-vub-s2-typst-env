@@ -46,13 +46,54 @@
 
 = Intro
 
-This report will discuss the improvements made to the CPU based pathtracer for Assignment-2 of the course: 'Performance Analysis & Evaluation'. Each major improvement will be discussed in their respective sections. Finally, the latest version of the implementation will be thoroughly discussed in @final. The methodology section discussing deviations from the standard per improvement section can be found in @methodology.
+This report will discuss the improvements made to the CPU based pathtracer for Assignment-2 of the course: 'Performance Analysis & Evaluation'. Each major improvement will be discussed in their respective sections: Lock in @lock; Inlining in @inlining; Pool in @pool; Parallel in @parallel. The results in each section, will be the improvement added during that section onto the previous version.
+
+Finally, the latest version of the implementation will be thoroughly discussed in @final. The methodology @methodology discusses deviations from the standard. The CoV charts can be found in @charts.
 
 
+= Methodology <methodology>
 
-= Improvement 1: Lock Contention
+This section will briefly explain some of the benchmarking methodology used and why there are some diversion from the recommendations made in class. This will in addition to the executed command mention with each image. In combination with `taskset` & `perfstat` information was collected. Due to `benchkit` limitation (or not finding how to), the `cpu_list` variable was set to all cores available for each iteration. The ideal would be that the `cpu_list` matches the `nb_threads` variable but was unsuccessful in the implementation.
 
-// Explain the lock contention with random
+The confidence intervals & CoV charts can be found in @charts. The only noticeable remark is the CoV values for the smallest scene 01 is outside of the recommendations. The other scenes are within acceptable range.
+
+== Base
+
+The numbers of runs was set to *3*, this deviates from the recommendations @paae_cov_range, @number_of_runs, but due to how much time the implementation takes, this was considered an appropriate middle ground. Additionally for `scene-05`, the number of thread count was limited to *20*, for the same reason as before.
+
+== Lock
+
+For the lock improvement, the usage of `taskset` was identical as with the base version. The number of runs was capped at *1* all executed variations. It is acknowledged that the number of runs is considered inappropriate for proper comparison. For `scene-05` the decision was made to only start benchmarking from the number of threads of 4 until 20.
+
+
+== Inline
+
+The number of runs per iteration was again set to *1*. It is acknowledged that the number of runs is considered inappropriate for proper comparison. All scenes where executed with the whole thread count range: `[1..33]`.
+
+
+== Pool
+
+Due to the improvement of the execution time of the application, the decision was made here to set the number of runs for each iteration to *5*, more closely matching the recommendation seen in class. All scenes where executed with the whole thread count range: `[1..33]`.
+
+
+== Parallel
+
+Due to the limitation of benchkit  mentioned earlier or not finding a working implementation, the build phase of the pathtracer uses the maximum available of threads it can see on the system.
+
+If `taskset` could be set in step with the number of threads given to the render time, the build time would also gradually decrease when the thread count is increased. In the current implementation & benchmarking, the build time uses the maximum number of available threads on the system.
+
+== SoA
+
+For this improvement the decision was made to execute *10* runs per iteration.
+
+
+== Final
+
+For this improvement *15* runs where executed per iteration.
+
+
+#pagebreak()
+= Improvement 1: Lock Contention <lock>
 
 This section will discuss the improvement of removing lock contention in the pathtracer implementation.
 
@@ -161,9 +202,9 @@ The improvement in performance becomes even more clear, when looking at the IPC 
 
 
 #pagebreak()
-= Improvement 2: Inlining
+= Improvement 2: Inlining <inlining>
 
-This section will discuss the process of inlining @inlining compute & time intensive operations to improve performance.
+This section will discuss the process of inlining @wiki_inlining compute & time intensive `vec3_*` operations.
 
 == Problem
 
@@ -194,15 +235,13 @@ When using the AMD μProf application in which show the profile result in @inlin
 
 == Solution
 
-The most immediate fix for this performance issue is the application of placing all the `vec3_*` function inside of the `vec3.h` file and placing the `inline` keyword before each. This 'forces' the compiler to inline the function code in every location where the code is called.
+The most immediate fix for this performance issue is the application of placing all the `vec3_*` function inside of the `vec3.h` file and placing the `inline` keyword before each. This 'forces' the compiler to inline the function code in every location where the code is called and prevent compiler from having to use `jumps/goto` and performing (registers updates, etc) for each `vec3` call.
 
 
 
 == Results
 
-The benchmark results of this section are the combination of the previous improvement and this improvement applied.
-
-Both the time and speedup are again charted in @time-inline-vs-lock, @speedup-inline-vs-lock respectively. Note, that for the speedup in @speedup-inline-vs-lock, the 'speedup' is compared against the time available of the lowest thread count value.
+Both the time and speedup are charted in @time-inline-vs-lock, @speedup-inline-vs-lock respectively. Note, that for the speedup in @speedup-inline-vs-lock, the 'speedup' is compared against the time available of the lowest thread count value.
 
 
 
@@ -256,7 +295,7 @@ These results do not particularly surprise, since the change does not concern it
 For all scenes, there is a _'large'_ increase in the number of miss branch prediction rate. While the cache miss rate is within margins. For the IPC, there is a large reduction to note for the largest scene 05.
 
 #pagebreak()
-= Improvement 3: Thread Pooling
+= Improvement 3: Thread Pooling <pool>
 
 
 This section will discuss the implementation of adding a thread pool which contains image rendering tasks. Each task will be responsible for a square tile of the image to be rendered.
@@ -266,7 +305,7 @@ This section will discuss the implementation of adding a thread pool which conta
 
 Analyzing the application, using the AMD μProf @amd_uprof application, and viewing the thread section, shows the behavior visible in @pool-before.
 
-Specifically the end of the timeline of the renderer is import. There is can be seen that the rendered splits the image in non equal work vertical slices as illustrated in @thread-util-before.
+Specifically the end of the timeline of the renderer is import. There is can be seen that the rendered splits the image in non equal workload vertical slices as illustrated in @thread-util-before.
 
 
 #grid(
@@ -283,11 +322,11 @@ Specifically the end of the timeline of the renderer is import. There is can be 
   ) <pool-before>
 ]
 
-Depending on the image to be rendered, some vertical slices may have less work than other vertical slices. Additionally, the last vertical slice of the image is padded so it rendered the full with of the image.
+Depending on the image to be rendered, some threads may have less work than other threads. This because not all pixels in an image are identically or have equal amount of work to be rendered.  Additionally, the last thread of the image is padded so it rendered the full width of the image.
 
 == Solution
 
-// TODO: Add some source also
+
 The problem identified above was solved by two additions. First, instead of vertical slices, the image is now split in smaller (16x16) square tiles, as illustrated in @thread-util-after. In addition to the image tilling, render tasks are now based on pool design @c_pool_1 @c_pool_2.
 
 The improvement in evenly shared work between the threads can be seen in @pool-updated. The end of the timeline, the threads finish more at the same time and there are no more threads that are sitting idle.
@@ -331,9 +370,9 @@ There is _small_ reduction in execution time for all scenes with the added impro
   ],
 )
 
-Look at the speedup in @speedup-pool-vs-inline, the efficiency of using more threads has been increased, with an overall much better usage for scene 02, where the reduction for the 20,24, threads has been eliminated.
+Looking at the speedup in @speedup-pool-vs-inline, the efficiency of using more threads has been increased, with an overall much better usage for scene 02, where the reduction for the 20,24, threads has been eliminated.
 
-White the pool improvement added, the positioning of each takes a position in the respective charts and a more clear distinction between scenes is visible.
+Each scenes has their respective execution behavior, depending on image size and computation cost. This behavior & cost, the positioning of each takes a position in the respective charts and a more clear distinction between scenes is visible.
 
 For the IPC, the lowest bound on scene-05 for 32 threads, compared to the previous improvement has been reduced from $~$1.2 to $~$1.1.
 
@@ -347,17 +386,14 @@ For the IPC, the lowest bound on scene-05 for 32 threads, compared to the previo
 
 
 #pagebreak()
-= Improvement 4: Parallel Build
+= Improvement 4: Parallel Build <parallel>
 
 This section will focus on making the `bvh_build` initialization function faster, by applying fork-join like multi-threading to the build process.
 
 
 == Problem
 
-
-Increasing the complexity & number of triangles when the scenes increases, leads to an explosion of the time it takes to build the BVH tree during the inizliation process, this behavior is visible in *ADD*.
-
-// TODO: Add image: build time increasing for large scenes.
+Increasing the complexity & number of triangles when the scenes increases, leads to an explosion of the time it takes to build the BVH tree during the initialization process.
 
 
 == Solution
@@ -368,7 +404,7 @@ This solution consists, of using a separate thread to compute the right side of 
 
 For the parallel improvement, the total time reduction for the smaller scenes is not really noticeable. With time plots for the scenes 01,02 and 04 matchiin their previous version. The largest reduction in execution time is for scene 05, as can be seen in @time-parallel-vs-pool.
 
-// FIXME: Check chart data, should be improving mere?
+
 // TODO: Check charts for correctness!
 #grid(
   columns: (1fr, 1fr),
@@ -396,16 +432,13 @@ For the speedup @speedup-parallel-vs-pool, the greatest improvement in efficienc
   caption: [IPC, Branch, Cache Miss Rate Percentage - Parallel vs Pool],
 ) <derived-metrics-parallel-vs-pool>
 
-There are no things to note for the IPC, Branch, Cache Miss Rate, with the addition of the new improvement.
-
-Above behavior is what could be expected when looking at the implementation and is also what the problem identified earlier tried to solve. Reducing the build phase of the `bvh` tree, which could be considered a success when looking at the above charts.
+There are no things to note for the IPC, Branch, Cache Miss Rate, with the addition of the new improvement. Above behavior is what could be expected when looking at the implementation and is also what the problem identified earlier tried to solve. Reducing the build phase of the `bvh` tree, which could be considered a success when looking at the above charts.
 
 
 
 #pagebreak()
 = Improvement 5: Structure of Arrays & SIMD <soa>
 
-// Explain the process of SoA & SIMD
 
 This section will discuss the application of transforming data layout from a AoS to Structure of Arrays (SoA). This to facilitate the application of SIMD vectorization on select functions.
 
@@ -583,14 +616,9 @@ The improvement has a negative impact on the IPC for the scene 01,02,04, a posit
 #pagebreak()
 = Conclusion
 
-This section will analyze the different improves applied on the pathtracer application and the overall impact on application behavior.
-
-The first look will be at the change in total time each scene & stage take in @tt-per-stage.
+This section will analyze the different improves applied on the pathtracer application and the overall impact on application behavior. The first look will be at the change in total time each scene & stage take in @tt-per-stage.
 
 
-// FIXME: At which thread count is this?
-// FIXME: Check the data
-// TODO: Check charts for correctness!
 #figure(
   image("charts/all/tt_per_stage.pdf"),
   caption: [],
@@ -632,47 +660,6 @@ Due to choices made in data collection, mentioned in @methodology, the 32 thread
 #pagebreak()
 = Appendix
 
-== Methodology <methodology>
-
-This section will briefly explain some of the benchmarking methodology used and why there are some diversion from the recommendations made in class. This will in addition to the executed command mention with each image. Due to `benchkit` limitation, the `cpu_list` variable was set to all cores available for each iteration. The ideal would be that the `cpu_list` matches the `nb_threads` variable but was unsuccessful in the implementation.
-
-The confidence intervals & CoV charts can be found in @charts. The only noticeable remark is the CoV values for the smallest scene 01 is outside of the recommendations. The other scenes are within acceptable range.
-
-=== Base
-
-The benchmarks performed on the base version where executed with the provided `benchmark.py` file. In combination with `taskset` & `perfstat` information was collected.
-
-The numbers of runs was set to *3*, this deviates from the recommendations @paae_cov_range, @number_of_runs, but due to how much time the implementation takes, this was considered an appropriate middle ground.
-
-Additionally for `scene-05`, the number of thread count was limited to *20*, for the same reason as before.
-
-=== Lock
-
-For the lock improvement, the usage of `taskset` was identical as with the base version. The number of runs was capped at *1* all executed variations. For `scene-05` the decision was made to only start benchmarking from the number of threads of 8 until 20.
-
-
-=== Inline
-
-The number of runs per iteration was again set to *1*. All scenes where executed with the whole thread count range: `[1..33]`.
-
-
-=== Pool
-
-Due to the improvement of the execution time of the application, the decision was made here to set the number of runs for each iteration to *5*, more closely matching the recommendation seen in class. All scenes where executed with the whole thread count range: `[1..33]`.
-
-
-=== Parallel
-
-Due to the limitation of benchkit  mentioned earlier or not finding a working implementation, the build phase of the pathtracer uses the maximum available of threads it can see on the system. If `taskset` could be set in step with the number of threads given to the render time, the build time would also gradually increase when the thread count is increased. In the current implementation & benchmarking phase, the build time uses the maximum number of available threads.
-
-=== SoA
-
-For this improvement the decision was made to execute *10* runs per iteration. This feels a good middle ground between detecting any instability and execution time for the benchmark. During previous benchmarks, the time variance between run _seems_ quite stable.
-
-
-=== Final
-
-// TODO: Measure the final version?
 
 == Platform
 
