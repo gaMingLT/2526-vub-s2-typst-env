@@ -639,22 +639,19 @@ Due to choices made in data collection, mentioned in @methodology, the 32 thread
 
 // TODO: More for gmean speedup
 
+#figure(
+  image("charts/all/amdahl_fit.pdf"),
+  caption: [Amdahl Law: Scene x Threads],
+) <amdahl-overview>
 
 
 // FIXME: Is this a proper way to use a USL chart?
-// NOTE: Amdahl Law might just be enough
 // TODO: Check charts for correctness!
-#figure(
-  image("charts/all/usl_fit.pdf"),
-  caption: [Universal Scaling Law: Scene x Threads],
-) <usl-overview>
+// #figure(
+//   image("charts/all/usl_fit.pdf"),
+//   caption: [Universal Scaling Law: Scene x Threads],
+// ) <usl-overview>
 
-
-
-// = Conclusion
-
-// Overall
-// TODO: Some notes here, or remove?
 
 
 #pagebreak()
