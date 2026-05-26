@@ -16,7 +16,8 @@
 #show: ilm.with(
   title: [Project],
   authors: "Milan Lagae",
-  date: datetime(year: 2026, month: 03, day: 28),
+  // TODO: Change date!
+  date: datetime(year: 2026, month: 06, day: 17),
 
   bibliography: bibliography("references.bib"),
   table-of-contents: outline(depth: 2),
