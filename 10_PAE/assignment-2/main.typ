@@ -57,7 +57,7 @@ This section will briefly explain some of the benchmarking methodology used and 
 
 Due to `benchkit` limitation (or not finding how to), the `cpu_list` variable was set to all cores available for each iteration. The ideal would be that the `cpu_list` matches the `nb_threads` variable, but this was unsuccessful in implementation.
 
-The confidence intervals & CoV charts can be found in @charts. The only noticeable remark is the CoV value(s) for the smallest scene 01 are outside of the recommended ranges. For the other scenes, the values are within acceptable range. The CoV values for the `perf stat` measurements are within the $[70.4, 71.9]$ range.
+The confidence intervals & CoV charts can be found in @charts. The only noticeable remark is the CoV value(s) for the smallest scene 01 are outside of the recommended ranges. For the other scenes, the values are within acceptable range. The CoV values for the `perf stat` measurements are within the $[70.4, 71.9]$ range @perf-stat-cov.
 
 == Base
 
@@ -731,3 +731,8 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
   ),
   caption: [Scene 05 - CI & CoV],
 )
+
+#figure(
+  image("charts/all/perf_cov.pdf", width: 80%),
+  caption: [Perf Stat Measurements CoV - Event x Stage],
+) <perf-stat-cov>
