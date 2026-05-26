@@ -57,7 +57,7 @@ This section will briefly explain some of the benchmarking methodology used and 
 
 Due to `benchkit` limitation (or not finding how to), the `cpu_list` variable was set to all cores available for each iteration. The ideal would be that the `cpu_list` matches the `nb_threads` variable, but this was unsuccessful in implementation.
 
-The confidence intervals & CoV charts can be found in @charts. The only noticeable remark is the CoV value(s) for the smallest scene 01 are outside of the recommended ranges. For the other scenes, the values are within acceptable range.
+The confidence intervals & CoV charts can be found in @charts. The only noticeable remark is the CoV value(s) for the smallest scene 01 are outside of the recommended ranges. For the other scenes, the values are within acceptable range. The CoV values for the `perf stat` measurements are within the $[70.4, 71.9]$ range.
 
 == Base
 
@@ -436,21 +436,21 @@ This section will discuss the application of transforming data layout from a AoS
 
 == Problem
 
-The problem to be solved is the usage of linked list, which makes use of pointers to keep track of elements in the list. While also transforming the data from a AoS to a SoA allowing for application of SIMD somewhere in the data path.
+As shown in class, using linked lists, which are based on pointers, can result in a problem called pointer chasing. Reducing memory efficiency, when in said lists, elements are regularly removed & added, resulting in pointers being spread throughout several different cache lines. In addition, transforming the data layout allows for the restructuring from AoS to a SoA layout, enabling the application of SIMD.
 
 
 
 == Solution
 
-Implementing the SoA memory layout in combination with `aligned_malloc` allows for the application of SIMD. While it would seem attractive to just use apply SIMD everywhere this is not what the performance numbers indicated. Choosing which function to use SIMD, must be considered & measured.
+The application of SIMD requires the alignment of allocated memory on either `16`, `32` or `64` bytes depending on available vector instruction support. Implementing the SoA memory layout in combination with `aligned_malloc` allows for the application of SIMD. Furthermore, it would seem attractive to just apply SIMD everywhere, but this is not what the performance numbers indicate. Choosing which function to use SIMD, must be considered & measured.
 
 Due note, that transforming from a AoS to SoA and (naively) replacing all `LINKED_LIST_FOREACH` macro with `for` loops, considerably reduces the performance of the application. Specifically for scene 05 on threads the times were: $~$25s build; $~$60s rendering (1 on @simd-soa-timings).
 
 After improving the `aabb_ray_intersect` with a more performant implementation and addition of an `inverse` field on `vec3`, the render time was reduced to $~$50s; the build time did not change (2 on @simd-soa-timings).
 
-Let's start of with some example of functions where the application of SIMD has negligible or negative impacts. The following numbers and examples are measured for `scene-05` and using *20* threads. We note that his is not a statistical analyis, but the wide chance in numbers does give an indication of performance.
+Let's start of with some examples of functions where the application of SIMD has negligible or negative impacts. The following numbers and examples are measured for `scene-05` and using *20* threads. We note that his is not a statistical analyis, but the wide chance in numbers does give an indication of performance.
 
-Implementing a SIMD based version of `aabb_for_triangles` (including `aabb_for_triangle` & `aabb_surrounding`) the build time regressed to $~$30s. The same can be said for `postprocess_pixels`. There the SIMD implementation regressed by about $~$1s for the render time (3 on @simd-soa-timings).
+Implementing a SIMD based version of `aabb_for_triangles` (including `aabb_for_triangle` & `aabb_surrounding`) the build time regressed to $~$30s. The same can be said for `postprocess_pixels`. There, the SIMD implementation regressed by about $~$1s for the render time (3 on @simd-soa-timings).
 
 #figure(
   caption: [Performance Evolution Profile (Scene 05, 20 Threads)],
@@ -538,7 +538,7 @@ The overall execution time with the addition of the SoA & application of SIMD to
   ],
 )
 
-The derived metrics from the `perf stat` wrapper can again be viewed in @derived-metrics-soa-vs-parallel.
+The derived metrics from the `perf stat` wrapper are once again shown in @derived-metrics-soa-vs-parallel.
 
 
 #figure(
@@ -568,7 +568,7 @@ Instead of allocating memory for each leaf of a node during the bvh build step, 
 
 == Results
 
-The execution time in @time-final-vs-soa is about the same as before. The smaller scenes see no real improvement, with the scene 02 even seeing an increase in execution time. With the largest scenes has the largest reduction in execution time.
+The application execution time can again be seen in @time-final-vs-soa. The smaller scenes see no real improvement, excluding scene 02 which sees an increase in execution time. In contrast to the largest scene, which has a noticable reduction in execution time.
 
 
 #grid(
@@ -614,7 +614,9 @@ This section will analyze the different improvements made for the pathtracer app
 ) <tt-per-stage>
 
 
-What is clear for the smallest scene 01, is that from the pool improvement on, each following improvement seems to have a negative impact on the time. This might be attributed to the overhead for the new features dominating. While for the larger scenes (02,04,05), all improvements indicate to have a positive improvement on execution time. With the `lock` improvement seeming to have the largest impact, followed by `inline`.
+What is clear for the smallest scene 01, is that from the pool improvement on, each following improvement seems to have a negative impact on the time. This might be attributed to the overhead for the new features dominating.
+
+The additive nature of the improvements appear to have had a positive impact on the execution time of the scenes 02,04 and 05. Ranking said improvements based on impact -- shows that the removal of lock contention in `lock` appears to have had the largest impact -- with the inlining of `vec3` instructions in `inline` second.
 
 Charting the speedup of each stage relative to the base version, for 3 different thread count (1,20,32), can be seen in @gmean-speedup-overview. The analysis makes use of the geometric mean as seen in class @paae_gmean_summary.
 
@@ -626,23 +628,16 @@ Charting the speedup of each stage relative to the base version, for 3 different
 
 Due to choices made in data collection, mentioned in @methodology, the 32 thread count chart is incomplete, any conclusions should be guarded. The charts for the 1 & 20 thread count chart, allow for a clear differentiating in speedup between single thread & multi-threaded behavior of the application.
 
-Analyzing the multi-threaded behavior of the final application using Amdahl's law can be seen in @amdahl-overview. While it is more of a diagnostic tool, the application does allow the analysis of the efficiency of the application for each improvement & scene.
+Analyzing the multi-threaded behavior of the final application, using Amdahl's law can be seen in @amdahl-overview. While it is more of a diagnostic tool, the application does allow the analysis of the efficiency of the application for each improvement & scene.
 
 #figure(
   image("charts/all/amdahl_fit.pdf"),
   caption: [Amdahl Law: Scene x Threads],
 ) <amdahl-overview>
 
-For the smaller scenes, the behavior does not deviate between the versions. The greatest improvement of efficiency can is visible for scene 05, when going from the `pool` version to `parallel`. For each subsequent version (`soa`, `final`) there is a reduction of maximum speedup.
+For the smaller scenes, the behavior does not deviate between the versions. The greatest improvement of efficiency is visible for scene 05, when going from the `pool` version to `parallel`. For each subsequent version (`soa`, `final`) there is a reduction of maximum speedup.
 
-Applying the USL law on the application indicated that Amdahl law was a better fit for modeling application behavior. There was no reduction in performance while increasing application thread count. Possible indicating that the application could still benefit from an increased thread count for the largest scene.
-
-
-// TODO: Check charts for correctness!
-// #figure(
-//   image("charts/all/usl_fit.pdf"),
-//   caption: [Universal Scaling Law: Scene x Threads],
-// ) <usl-overview>
+Applying the USL law on the application indicated that Amdahl law provided a better fit for modeling the application's behavior. No performance degradation was observed when increasing the thread count, potentially suggesting that the application could further benefit from a continued increase in thread count for the largest scene.
 
 
 
@@ -670,7 +665,6 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
   caption: [Desktop Specifications],
 ) <desktop>
 
-Note: for the scheduling, all benchmark are executed using `taskset`. Due to `benchkit` limitation, the `taskset` cpu list is set to all available cores and the `thread`variable is varied.
 
 == Charts <charts>
 
