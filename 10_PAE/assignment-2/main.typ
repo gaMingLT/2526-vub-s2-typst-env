@@ -675,10 +675,10 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
     column-gutter: 5pt,
     inset: 2pt,
     [
-      #image("charts/all/ci/ci_box.pdf")
+      #image("charts/all/ci/ci_01-box.pdf")
     ],
     [
-      #image("charts/all/cov/cov_heatmap_box.pdf")
+      #image("charts/all/cov/cov_heatmap_01-box.pdf")
     ],
   ),
   caption: [Scene 01 - CI & CoV],
@@ -691,10 +691,10 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
     column-gutter: 5pt,
     inset: 2pt,
     [
-      #image("charts/all/ci/ci_cornell-box.pdf")
+      #image("charts/all/ci/ci_02-cornell-box.pdf")
     ],
     [
-      #image("charts/all/cov/cov_heatmap_cornell-box.pdf")
+      #image("charts/all/cov/cov_heatmap_02-cornell-box.pdf")
     ],
   ),
   caption: [Scene 02 - CI & CoV],
@@ -707,10 +707,10 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
     column-gutter: 5pt,
     inset: 2pt,
     [
-      #image("charts/all/ci/ci_cornell-spheres.pdf")
+      #image("charts/all/ci/ci_04-cornell-spheres.pdf")
     ],
     [
-      #image("charts/all/cov/cov_heatmap_cornell-spheres.pdf")
+      #image("charts/all/cov/cov_heatmap_04-cornell-spheres.pdf")
     ],
   ),
   caption: [Scene 04 - CI & CoV],
@@ -723,10 +723,10 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
     column-gutter: 5pt,
     inset: 2pt,
     [
-      #image("charts/all/ci/ci_dragon.pdf")
+      #image("charts/all/ci/ci_05-dragon.pdf")
     ],
     [
-      #image("charts/all/cov/cov_heatmap_dragon.pdf")
+      #image("charts/all/cov/cov_heatmap_05-dragon.pdf")
     ],
   ),
   caption: [Scene 05 - CI & CoV],
