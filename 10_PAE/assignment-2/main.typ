@@ -53,11 +53,11 @@ Finally, the latest version of the implementation will be thoroughly discussed i
 
 = Methodology <methodology>
 
-This section will briefly explain some of the benchmarking methodology used and why there are some deviations from the recommendations made in class. In combination with `taskset` & `perfstat` information was collected. The list of PMU events tracked during benchmarking are the following: `branches`, `branch-misses`, `cache-misses` `cache-references`, `cycles`, `instructions`, `stalled-cycles-frontend`.
+This section will briefly explain some of the benchmarking methodology used and why there are some deviations from the recommendations made in class. During the benchmarking, information was collected using `taskset` & `perfstat`. The list of PMU events tracked during benchmarking are the following: `branches`, `branch-misses`, `cache-misses` `cache-references`, `cycles`, `instructions`, `stalled-cycles-frontend`.
 
 Due to `benchkit` limitation (or not finding how to), the `cpu_list` variable was set to all cores available for each iteration. The ideal would be that the `cpu_list` matches the `nb_threads` variable, but this was unsuccessful in implementation.
 
-The confidence intervals & CoV charts can be found in @charts. The only noticeable remark is the CoV value(s) for the smallest scene 01 are outside of the recommendations. For the other scenes, the values are within acceptable range.
+The confidence intervals & CoV charts can be found in @charts. The only noticeable remark is the CoV value(s) for the smallest scene 01 are outside of the recommended ranges. For the other scenes, the values are within acceptable range.
 
 == Base
 
@@ -126,7 +126,7 @@ Initial sourcing for this became clear after using `perf stat`, `perf record` & 
 
 
 
-This same behavior is visible in @lock-before, where the gray lines between the thread activity is the thread waiting for a lock to be finished.
+This same behavior is visible in @lock-before where the gray lines between the thread activity is the thread waiting for a lock to be finished.
 
 #grid(
   columns: (1fr, 1fr),
@@ -146,7 +146,7 @@ This same behavior is visible in @lock-before, where the gray lines between the 
 )
 
 
-Using the `perf record` annotate, the offending function can be found: `rand()`, as is shown in @perf-annotate-lock. Looking up the man page of the function @rand, it becomes clear that the function is not thread safe and suffers from heavy lock contention in thread heavy workloads.
+Using the `perf record` annotate, the offending function can be found: `rand()`, as shown in @perf-annotate-lock. Looking up the man page of the function @rand, it becomes clear that the function is not thread safe and suffers from heavy lock contention in thread heavy workloads.
 
 This behavior becomes clear when the Total Time of each scene is plotted vs the thread count in @base-tt_vs_thread_count.
 
@@ -155,7 +155,7 @@ This behavior becomes clear when the Total Time of each scene is plotted vs the 
   caption: [Total Time - Base],
 ) <base-tt_vs_thread_count>
 
-In the scenes 01, 02 and 04 increasing the thread count from 8 to 12, increases the total time taking for rendering said image. For the larger (scene 05), this behavior is not as clearly visible, but there is slight increase in time when increasing the number of threads. This increase can be attributed to the use of the non reentrant safe `rand()` function.
+In the scenes 01, 02 and 04 increasing the thread count from 8 to 12, increases the total time taking for rendering said image. For the larger (scene 05), this behavior is not as clearly visible, but there is a slight increase in time when increasing the number of threads. This increase can be attributed to the use of the non reentrant safe `rand()` function.
 
 
 == Solution
@@ -224,7 +224,7 @@ What became clear during the previous improvement & looking at the code, is the 
   ) <inlining-base-perf-2>
 ]
 
-When using the AMD μProf profiling application of which the results is shown in @inlining-base-amd-uprof, is that the `vec3_index` function alone is takes *95 seconds*.
+When using the AMD μProf profiling application of which the results are shown in @inlining-base-amd-uprof, is that the `vec3_index` function alone takes *95 seconds*.
 
 #figure(
   image("images/2-inlining/select-uprof-base-inline-04-20.png", width: 80%),
@@ -290,7 +290,7 @@ These results do not particularly surprise, since the change does not concern it
   caption: [IPC, Branch, Cache Miss Rate Percentage - Inline vs Lock],
 ) <derived-metrics-inline-vs-lock>
 
-For all scenes, there is a _'large'_ increase in the in the branch miss prediction rate, while the cache miss rate did not substantially change between the previous version. For the IPC, there is a substantial reduction to note for the largest scene 05.
+For all scenes, there is a _'large'_ increase in the branch miss prediction rate, while the cache miss rate did not substantially change between the previous version. For the IPC, there is a substantial reduction to note for the largest scene 05.
 
 #pagebreak()
 = Improvement 3: Thread Pooling <pool>
@@ -301,7 +301,7 @@ This section will discuss the implementation of adding a thread pool which conta
 
 == Problem
 
-Analyzing the application, using the AMD μProf @amd_uprof application, and viewing the thread section, shows the behavior visible in @pool-before. Specifically the end of the timeline of the renderer is important. The illustration in @thread-util-before shows how the rendered splits the image in non equal workload, by splitting the image vertical slices from top to bottom.
+Analyzing the application, using the AMD μProf @amd_uprof application, and viewing the thread section, shows the behavior visible in @pool-before. Specifically the end of the timeline of the renderer is important. The illustration in @thread-util-before shows how the renderer splits the image in non equal workload, by splitting the image vertical slices from top to bottom.
 
 
 #grid(
@@ -325,7 +325,7 @@ Depending on the image to be rendered, some threads may have less work than othe
 
 The problem identified above was solved by two additions. First, instead of vertical slices, the image is now split in smaller (16x16) square tiles, as illustrated in @thread-util-after. In addition to the image tilling, render tasks are now based on pool design @c_pool_1 @c_pool_2.
 
-The improvement in evenly shared work between the threads can be seen in @pool-updated. The end of the timeline, the threads finish more at the same time and there are no more threads that are sitting idle.
+The improvement in evenly shared work between the threads can be seen in @pool-updated. At the end of the timeline, the threads converge to finish simultaneously, eliminating any idle time.
 
 #grid(
   columns: (1fr, 1fr),
@@ -367,8 +367,6 @@ There is _small_ reduction in execution time for all scenes with the added impro
 )
 
 Looking at the speedup in @speedup-pool-vs-inline, the efficiency of using more threads has been increased, with an overall much better usage for scene 02, where the reduction for the 20,24, threads has been eliminated.
-
-Each scenes has their respective execution behavior, depending on image size and computation cost. This behavior & cost, the positioning of each takes a position in the respective charts, and a more clear distinction between scenes is visible.
 
 For the IPC, the lowest bound on scene-05 for 32 threads, compared to the previous improvement has been reduced from $~$1.2 to $~$1.1.
 
@@ -417,8 +415,7 @@ For the parallel improvement, the total time reduction for the smaller scenes is
   ],
 )
 
-For the speedup @speedup-parallel-vs-pool, the greatest improvement in efficiency is for scene 05. Were the efficiency of more threads has made quite a big jump.
-
+For the speedup @speedup-parallel-vs-pool, the greatest improvement in efficiency is for scene 05, were the efficiency of using more threads has increased substantially.
 
 
 #figure(
