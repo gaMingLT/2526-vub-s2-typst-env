@@ -53,11 +53,11 @@ Finally, the latest version of the implementation will be thoroughly discussed i
 
 = Methodology <methodology>
 
-This section will briefly explain some of the benchmarking methodology used and why there are some deviations from the recommendations made in class. During the benchmarking, information was collected using `taskset` & `perfstat`. The list of PMU events tracked during benchmarking are the following: `branches`, `branch-misses`, `cache-misses` `cache-references`, `cycles`, `instructions`, `stalled-cycles-frontend`.
+This section will briefly explain some of the benchmarking methodology used and why there are some deviations from the recommendations made in class. During the benchmarking, information was collected using `taskset` & `perfstat`. The list of PMU events tracked during benchmarking are the following: `branches`, `branch-misses`, `cache-misses` `cache-references`, `cycles`, `instructions`, `stalled-cycles-frontend`. Before executing each benchmarking run 5 runs of the largest scene where executed, to serve as warmup.
 
 Due to `benchkit` limitation (or not finding how to), the `cpu_list` variable was set to all cores available for each iteration. The ideal would be that the `cpu_list` matches the `nb_threads` variable, but this was unsuccessful in implementation.
 
-The confidence intervals & CoV charts can be found in @charts. The only noticeable remark is the CoV value(s) for the smallest scene 01 are outside of the recommended ranges. For the other scenes, the values are within acceptable range. The CoV values for the `perf stat` measurements are within the $[70.4, 71.9]$ range @perf-stat-cov.
+The confidence intervals, CoV & Std charts can be found in @charts. The only noticeable remark is the CoV value(s) for the smallest scene 01 are outside of the recommended ranges. For the other scenes, the values are within acceptable range. The CoV values for the `perf stat` measurements are within the $[70.4, 71.9]$ range @perf-stat-cov.
 
 == Base
 
@@ -620,7 +620,7 @@ The additive nature of the improvements appear to have had a positive impact on 
 
 Charting the speedup of each stage relative to the base version, for 3 different thread count (1,20,32), can be seen in @gmean-speedup-overview. The analysis makes use of the geometric mean as seen in class @paae_gmean_summary.
 
-// TODO: Check charts for correctness!
+
 #figure(
   image("charts/all/speedup_vs_base.pdf"),
   caption: [Geometric Mean Speedup, Per Stage & Scene (1, 20, 32 threads)],
@@ -671,7 +671,7 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
 
 #figure(
   grid(
-    columns: (1fr, 1fr),
+    columns: (1fr, 1fr, 1fr),
     column-gutter: 5pt,
     inset: 2pt,
     [
@@ -680,14 +680,17 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
     [
       #image("charts/all/cov/cov_heatmap_01-box.pdf")
     ],
+    [
+      #image("charts/all/std/std_heatmap_01-box.pdf")
+    ],
   ),
-  caption: [Scene 01 - CI & CoV],
+  caption: [Scene 01 - CI, CoV & Std],
 )
 
 
 #figure(
   grid(
-    columns: (1fr, 1fr),
+    columns: (1fr, 1fr, 1fr),
     column-gutter: 5pt,
     inset: 2pt,
     [
@@ -696,14 +699,17 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
     [
       #image("charts/all/cov/cov_heatmap_02-cornell-box.pdf")
     ],
+    [
+      #image("charts/all/std/std_heatmap_02-cornell-box.pdf")
+    ],
   ),
-  caption: [Scene 02 - CI & CoV],
+  caption: [Scene 02 - CI, CoV & Std],
 )
 
 
 #figure(
   grid(
-    columns: (1fr, 1fr),
+    columns: (1fr, 1fr, 1fr),
     column-gutter: 5pt,
     inset: 2pt,
     [
@@ -712,14 +718,18 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
     [
       #image("charts/all/cov/cov_heatmap_04-cornell-spheres.pdf")
     ],
+
+    [
+      #image("charts/all/std/std_heatmap_04-cornell-spheres.pdf")
+    ],
   ),
-  caption: [Scene 04 - CI & CoV],
+  caption: [Scene 04 - CI, CoV & Std],
 )
 
 
 #figure(
   grid(
-    columns: (1fr, 1fr),
+    columns: (1fr, 1fr, 1fr),
     column-gutter: 5pt,
     inset: 2pt,
     [
@@ -728,8 +738,11 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
     [
       #image("charts/all/cov/cov_heatmap_05-dragon.pdf")
     ],
+    [
+      #image("charts/all/std/std_heatmap_05-dragon.pdf")
+    ],
   ),
-  caption: [Scene 05 - CI & CoV],
+  caption: [Scene 05 - CI, CoV & Std],
 )
 
 #figure(
