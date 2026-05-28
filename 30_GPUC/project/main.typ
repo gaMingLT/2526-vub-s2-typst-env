@@ -50,7 +50,7 @@
 
 This report will discuss the assignment 'Project' for the course: 'GPU Computing'. First, the context of the application of a Genetic Algorithm will be discussed for the problem space add hand. After the context, the pipeline for data preparation and more information about the problem will be discussed in @pipeline. Continuing from the pipeline, the updated sequential will be discussed including the naive speedup methods. Finally, the focus of the assignment the parallel version in @parallel. Concluding, both version will be analyzed in @analysis.
 
-// FIXME: Make sure this is present in the final version!
+
 == Declaration of AI Usage
 
 For starting the project and the start up phases AI was used. The repository for preprocessing the DEM data can be found here @dem_preprocessing. As a starting point, the following repository was used for both the sequential & parallel version of the algorithm: @cuda_starting_point. The initial repository was updated to reflect the modern features, such as the deprecated `rand()` function and more. After the code was updated, some AI help was used to think through the genetic algorithm structures.
@@ -61,8 +61,6 @@ For starting the project and the start up phases AI was used. The repository for
 The problem for which the genetic algorithm is used, is a problem widely occurring in the wireless networking world @yoonEfficientGeneticAlgorithm2013b. Where, wireless internet providers must decide where to position there service towers to provided the maximum or greatest coverage, taking into account terrain features.
 
 This identical problem, occurs in the military domain, were with a limited set of sensors, the greatest coverage (or detection probability) must be gained with the available sensors @ridderMissionPlanningJoint2005.
-
-// This type problem is considered an *TODO: add*, where the problem is to large to compute with normal methods and therefor different methods are found to look for optimal algorithms: (*TODO: source*).
 
 For this reasons, there have been historically been several attempts with success add using Genetic Algorithms to solve this particular problem @dhillonSensorPlacementEffective.
 
@@ -189,7 +187,6 @@ Expanding the analysis to the fitness value and speedup, both of are shown in @s
   ),
   caption: [Fitness (right) and Speedup (left)],
 )<seq-fitness-speedup>
-
 
 
 // TODO: Add paragraph
@@ -327,6 +324,8 @@ The next is a list of helper kernels which are executed by the previously list o
   caption: [Genetic Algorithm Flow],
 ) <ga-flow>
 
+
+#set page(columns: 1)
 == Kernels <kernels>
 
 
@@ -334,11 +333,52 @@ The next is a list of helper kernels which are executed by the previously list o
 #pagebreak()
 = Analysis <analysis>
 
-// Compare Sequential vs parallel & more in depth of the parallel version
+This section will perform an analysis of the parallel GA implementation and its metrics. After an analysis of the parallel implementation is performed, a execution time comparison will be made to the sequential version.
 
 == Methodology
 
-// TODO: Short section about how many runs
+The timing data collected for the sequential version executed *5* runs per configuration. The accompanying charts for the Cov & Std dev can be found in @charts-seq.
+
+For the parallel implementation the timing data collection was made using the `std::chrono` library inside of the program. For each program execution *5* runs were collected. The accompanying charts for the Cov & Std dev can be found in @charts-par-timing.
+
+Execution timing data for the sequential & parallel version are all within guidelines.
+
+Collection metrics for the parallel version regarding bandwidth, etc, was a bit more difficult, due to the number of kernels launched. For this reason the `ncu` #footnote[https://developer.nvidia.com/nsight-compute] CLI was used in combination with `benchkit`i #footnote[https://github.com/open-s4c/benchkit]. This allowed for collecting targeted per kernel metrics using preset profiles for the wanted kernels.
+
+The kernels that where profiled are the following: `initBufferKernel`, `initIslandBufferKernel`, `gaIslandKernel` and `evaluateIsland`. These kernels are the most involved in the algorithm, based on previous Nvidia Nsight Compute analysis. The collected metrics for each kernel where based on the `detailed` set. Due to how much time each profiling run takes, the number of iterations was reduced compared to the timing dataset.
+
+
+== Execution Time
+
+
+
+// TODO: Update chart sub titles
+#figure(
+  image("assets/charts/par/timing/fitness_vs_time.pdf"),
+  caption: [Timing Dataset - Fitness vs Time],
+)
+
+// TODO: Update chart sub titles
+#figure(
+  image("assets/charts/par/timing/time_vs_parameters.pdf"),
+  caption: [Timing Dataset - Time vs Parameters],
+)
+
+// TODO: Update chart sub titles
+#figure(
+  image("assets/charts/par/big-pop/population_vs_fitness.png"),
+  caption: [Large Population Dataset - Population Size vs Fitness],
+)
+
+
+== Bandwidth x Compute
+
+
+
+
+== Vs Sequential
+
+
 
 
 #pagebreak()
@@ -372,14 +412,36 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
 
 == Charts
 
-=== Sequential
+=== Sequential <charts-seq>
 
 #figure(
   image("assets/charts/seq/cov_heatmap.pdf"),
-  caption: [*TODO:*],
+  caption: [Sequential - Execution Time CoV],
 )
 
 #figure(
   image("assets/charts/seq/std_dev.pdf"),
-  caption: [*TODO:*],
+  caption: [Sequential - Execution Time Std Dev],
+)
+
+
+== Parallel
+
+=== Timing <charts-par-timing>
+
+#figure(
+  image("assets/charts/par/timing/cov_heatmap.pdf"),
+  caption: [Timing Dataset - Execution Time CoV ],
+)
+
+#figure(
+  image("assets/charts/par/timing/std_heatmap.pdf"),
+  caption: [Timing Dataset - Execution Time Std Dev],
+)
+
+=== Large Population
+
+#figure(
+  image("assets/charts/par/big-pop/variability_heatmaps.png"),
+  caption: [Large Population Dataset - Execution Time Cov & Std Dev],
 )
