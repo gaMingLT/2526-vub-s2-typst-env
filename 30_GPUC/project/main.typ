@@ -197,10 +197,10 @@ Expanding the analysis to the fitness value and speedup, both of are shown in @s
 #pagebreak()
 = Parallel <parallel>
 
-This section will discuss the creation & implementation of the Genetic algorithm for computing using Cuda.
+This section will discuss the creation & implementation of the Genetic algorithm for computing using Cuda. First, the genetic structure of the algorithm will be discussed in @structure. A list of kernels & helper functions in @overview. A flowchart of how the algorithm interacts in @flow. And to complete, a detailed analysis of each kernel in @kernels.
 
 
-== Genetic Structure
+== Genetic Structure <structure>
 
 The genes of the genetic algorithm are structured as `double` value as shown in @gene-structure.
 
@@ -285,8 +285,49 @@ Walking up the ladder of structures of the algorithm, the over arching one is th
 It stores the FLIR parameters, terrain parameters, GA parameters (mutation, etc), the earlierly listed chromosomes & genes list and the pod table, terrain elevation data and finally viewshed LUT.
 
 
-== Kernel Overview
+== Kernels Overview <overview>
 
+This subsection will briefly discuss the list of implemented kernels and their purposes before going in depth in the following section.
+
+The following is the list of specific kernels:
+- `initBufferKernel`: initializes chromosome values with default values for a population
+- `setupCurand`: seeds a list randomness values in a shared state object
+- `initIslandBufferKernel`: initializes per island chromosome values with defaults for a population
+- `buildRouletteKernel`: initializes roulette values for each island
+- `gaIslandKernel`: per island GA: `roulette`, `crossover`, `mutate`
+- `migrateRingKernel`: migrates population between islands, shared ring buffer
+
+The next is a list of helper kernels which are executed by the previously list of kernels:
+- `cudaInitPopulation`:
+- `rouletteSelect`:
+- `crossover`:
+- `mutate`:
+- `getVisibilityFactor`:
+- `lookupPODSq`:
+// TODO: Rename and remove shared
+- `calculateOverlapPenaltyShared`:
+
+// TODO: Continue here
+
+
+#set page(columns: 2)
+
+
+== Flow <flow>
+
+#figure(
+  grid(
+    [
+      #image("assets/images/par/GPUC-Flow.pdf", page: 1)
+    ],
+    [
+      #image("assets/images/par/GPUC-Flow.pdf", page: 2)
+    ],
+  ),
+  caption: [Genetic Algorithm Flow],
+) <ga-flow>
+
+== Kernels <kernels>
 
 
 
