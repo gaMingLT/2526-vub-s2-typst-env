@@ -60,9 +60,9 @@ For starting the project and the start up phases AI was used. The repository for
 
 The problem for which the genetic algorithm is used, is a problem widely occurring in the wireless networking world @yoonEfficientGeneticAlgorithm2013b. Where, wireless internet providers must decide where to position there service towers to provided the maximum or greatest coverage, taking into account terrain features.
 
-This identical problem, occurs in the military domain, were with a limited set of sensors, the greatest coverage (or detection probability) must be gained with the available sensors @ridderMissionPlanningJoint2005. 
+This identical problem, occurs in the military domain, were with a limited set of sensors, the greatest coverage (or detection probability) must be gained with the available sensors @ridderMissionPlanningJoint2005.
 
-// This type problem is considered an *TODO: add*, where the problem is to large to compute with normal methods and therefor different methods are found to look for optimal algorithms: (*TODO: source*). 
+// This type problem is considered an *TODO: add*, where the problem is to large to compute with normal methods and therefor different methods are found to look for optimal algorithms: (*TODO: source*).
 
 For this reasons, there have been historically been several attempts with success add using Genetic Algorithms to solve this particular problem @dhillonSensorPlacementEffective.
 
@@ -96,6 +96,29 @@ For visualization purposes, the several `*.tiff` files and `sensors.csv` file co
 
 The genetic algorithm itself requires appropriate terrain data for a more realistic scenario. This type of data can be downloaded from public sources easily, and for this reason, the data for the country of Belgium was used. In this case, the source of the data came from #footnote[https://portal.opentopography.org/raster?opentopoID=OTSDEM.032021.4326.2] and was downloaded on 10 April 2026.
 
+The two areas chosen as a comparison of the GA between flat terrain and a bit more hilly terrain can be seen in @ardennes-area & @flanders-area.
+
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 5pt,
+  [
+    #figure(
+      image("assets/images/Ardennes.pdf"),
+      caption: [Ardennes Geolocation Area],
+    ) <ardennes-area>
+  ],
+  [
+    #figure(
+      image("assets/images/Flanders.pdf"),
+      caption: [Flanders Geolocation Area],
+    ) <flanders-area>
+  ],
+)
+
+The coordinates of both areas are the following: (Gdal format):
+- Ardennes: $5.4, 49.8, 5.540, 49.890$
+- Flanders: $2.58, 51.00, 2.72, 51.09$
+
 == Preprocessing
 
 After the DEM data is available, the preprocessing step using `python` may begin. For this type of data & problem, there is a library available which does the heavy preprocessing lifting that is required, called: `gdal` @gdal_library.
@@ -127,13 +150,61 @@ This section will briefly discuss the updates made to the sequential genetic alg
 
 == Updates
 
+*TODO:* Quickly go over the update's and changes made to the code / algorithm.
 
 == OpenMP
 
+Several `for` loop inside of the code have received a `#pragme` for enabling acceleration with earlier named OpenMP library.
 
+For the function: `computeChromosomeFitness`, the sensor loop has received a `#pragma omp simd`, the loop that iterates over all the cells of the grid has received the following pragma: `#pragma omp simd reduction(+:totalPOD)`
+
+The evaluation function: `evaluate`, has received the following pragma on the loop: `#pragma omp parallel for reduction(+:totalFitness) schedule(dynamic, 4)`. Generating the offsprings is handled by the function: `generateOffsprings`, for which the loop has received the following pragma: `#pragma omp parallel for schedule(dynamic, 4)`.
+
+Due note that this is a naive application of the use of OpenMP pragma's, and are just an indication of how a naive application compares to a more handcrafted version genetic algorithm using Cuda.
+
+== Results
+
+This subsection will showcase the quick results of applying OpenMP pragma's on the genetic algorithm. The result of which can be seen in @openmp-threads.
+
+#figure(
+  image("assets/charts/seq/execution_time.pdf", width: 80%),
+  caption: [Sequential GA - OpenMP],
+) <openmp-threads>
+
+
+As is visible in the image, the addition of even naive application of OpenMP pragmas, results in a *8x* reduction in execution_time between the single thread variant in the _32_ thread variant.
+
+Expanding the analysis to the fitness value and speedup, both of are shown in @seq-fitness-speedup.
+
+#figure(
+  grid(
+    columns: (1fr, 1fr),
+    column-gutter: 5pt,
+    [
+      #image("assets/charts/seq/fitness_vs_threads.pdf")
+    ],
+    [
+      #image("assets/charts/seq/speedup.pdf")
+    ],
+  ),
+  caption: [Fitness (right) and Speedup (left)],
+)<seq-fitness-speedup>
+
+
+
+// TODO: Add paragraph
 
 #pagebreak()
 = Parallel <parallel>
+
+This section will discuss the creation & implementation of the Genetic algorithm for computing using Cuda.
+
+
+== Genetic Structure
+
+
+
+== Kernel Overview
 
 
 
@@ -175,3 +246,18 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
   ),
   caption: [Desktop Specifications],
 ) <desktop>
+
+
+== Charts
+
+=== Sequential
+
+#figure(
+  image("assets/charts/seq/cov_heatmap.pdf"),
+  caption: [*TODO:*],
+)
+
+#figure(
+  image("assets/charts/seq/std_dev.pdf"),
+  caption: [*TODO:*],
+)
