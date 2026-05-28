@@ -87,8 +87,7 @@ The process start with downloading the DEM data from a public source. Once the d
 
 After the viewshed & terrain files are generated, the genetic algorithm is executed with those files as input. The GA takes input parameters and computes a result based on input parameters. The Ga generates a `sensors.csv` file, which contains the sensors positions based on grid coordinates.
 
-// TODO: Rewrite
-For visualization purposes, the several `*.tiff` files and `sensors.csv` file converted to GEO based coordinates in `geo_sensor.csv` into QGIS which is used for visualization.
+The `*.tiff` files are created for visualization reasons and can later be imported into QGIS #footnote[https://qgis.org]. The generated `sensors.csv` is file is than converted into GEO spatial coordinates file called: `geo_sensors.csv`, which can also be imported into QGIS.
 
 == DEM
 
@@ -146,9 +145,9 @@ Closing the list of scripts: `convert_sensors.py` is responsible for converting 
 
 This section will briefly discuss the updates made to the sequential genetic algorithm and naive attempt at speedup up the code by using OpenMP #footnote[https://www.openmp.org/].
 
-== Updates
+== Implementation
 
-*TODO:* Quickly go over the update's and changes made to the code / algorithm.
+*TODO:* Quickly go over the implementation and changes made to the code / algorithm.
 
 == OpenMP
 
@@ -295,16 +294,15 @@ The following is the list of specific kernels:
 - `migrateRingKernel`: migrates population between islands, shared ring buffer
 
 The next is a list of helper kernels which are executed by the previously list of kernels:
-- `cudaInitPopulation`:
-- `rouletteSelect`:
-- `crossover`:
-- `mutate`:
-- `getVisibilityFactor`:
-- `lookupPODSq`:
+- `cudaInitPopulation`: initializes each island population
+- `rouletteSelect`: performs selection of chromosome
+- `crossover`: performs genes crossover between current & new population
+- `mutate`: mutates the genes for selection chromosome
+- `getVisibilityFactor`: retrieves the visibility factor based on source & target coordinates
+- `lookupPODSq`: POD (Probability of Detection) lookup
 // TODO: Rename and remove shared
-- `calculateOverlapPenaltyShared`:
+- `calculateOverlapPenaltyShared`: calculates penalty if sensor overlap
 
-// TODO: Continue here
 
 
 #set page(columns: 2)
@@ -312,6 +310,7 @@ The next is a list of helper kernels which are executed by the previously list o
 
 == Flow <flow>
 
+// TODO:
 #figure(
   grid(
     [
@@ -324,9 +323,49 @@ The next is a list of helper kernels which are executed by the previously list o
   caption: [Genetic Algorithm Flow],
 ) <ga-flow>
 
+The explanation of the algorithm flow will use the following parameters:
+- population size: $1000$
+- sensors: $100$
+- islands: $5$
+- generation: $100$
+- \#threads/block: $512$
+
+The genetic algorithm starts of with initializing two populations, a `buffer` and main `population` population. The `cudaInitPopulation` is the function where all the CPU code is copied into the GPU's memory.
+
+Once the buffers have been initialized, the size of the `sharedMemSize` object is calculated for use later in the `evaluateIsland` kernel. The `d_pop1` is set to `cudaPopulation` and `d_pop2` is set to `cudaBuffer`.
+
+The `d_pop1` kernel is initialized using `initBufferKernel`. For the example parameters, this will result in 3 blocks being launched.
+
+Each island requires a `curand` state, this initialization is handled by the `setupCurand` kernel, in the example, it will launch $5$ blocks.
+
+In an attempt at speeding up the execution of the evaluation of the chromosomes, `cudaStream`'s #footnote[https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/asynchronous-execution.html] where used. The numbers of streams equals the number of islands.
+
+After the setup, the generation loops initiates.
+
+The first step is the `initIslandBufferKernel`, it will initialize each kernel separately in the `d_pop2` population variable. Each separate island may now execute the GA algorithm independently after initialization.
+
+Before the GA can be executed, the roulette selection must be setup by `buildRouletteKernel`, this is a single block & single thread execution.
+
+Each `gaIsland` kernel will launch 1 block and in total 5 blocks will be executed. Each thread will perform some iterations to select some participants for selection.
 
 #set page(columns: 1)
+
+Selection is performed by `rouletteSelect`, for 2 parents, the 2 parents are passed to `crossOver`, and result is passed to `mutate` (x, y) coordinates. The results of which are written to the `buffer` population. At the end the `threadState` is saved into global states.
+
+After the population of each kernel is 'updated' each island can be evaluated for its fitness. Before doing so, a pointer swap is performed. The previously `buffer` population (`d_pop2`) becomes `d_pop1` and is evaluated.
+
+Each island and population is evaluated separately `evaluateIsland`, for each island, 200 blocks are spawned, matching the number of chromosomes.
+
+Global migration between the island only occurs every *5* generations as set by the `migration_interval`. This allows each island grow, without incurring migration cost every generation. At the same time, every *5* generations, the chromosomes are checked to see if any have reached the converged.
+
+If the `maxFitness` value has not reached the convergence value, the generation execution continues.
+
+
 == Kernels <kernels>
+
+This subsection will analyze the kernels more in depth.
+
+
 
 
 
@@ -345,7 +384,7 @@ Execution timing data for the sequential & parallel version are all within guide
 
 Collection metrics for the parallel version regarding bandwidth, etc, was a bit more difficult, due to the number of kernels launched. For this reason the `ncu` #footnote[https://developer.nvidia.com/nsight-compute] CLI was used in combination with `benchkit`i #footnote[https://github.com/open-s4c/benchkit]. This allowed for collecting targeted per kernel metrics using preset profiles for the wanted kernels.
 
-The kernels that where profiled are the following: `initBufferKernel`, `initIslandBufferKernel`, `gaIslandKernel` and `evaluateIsland`. These kernels are the most involved in the algorithm, based on previous Nvidia Nsight Compute analysis. The collected metrics for each kernel where based on the `detailed` set. Due to how much time each profiling run takes, the number of iterations was reduced compared to the timing dataset.
+The kernels that where profiled are the following: `initBufferKernel`, `initIslandBufferKernel`, `gaIslandKernel` and `evaluateIsland`. These kernels are the most involved in the algorithm, based on previous Nvidia Nsight Compute analysis. The collected metrics for each kernel where based on the `detailed` set. Due to how much time each profiling run takes, the number of iterations was reduced compared to the timing dataset. For all parallel benchmarks, the number of threads per block was fixed to *512*.
 
 
 == Execution Time
@@ -377,6 +416,10 @@ The kernels that where profiled are the following: `initBufferKernel`, `initIsla
 
 
 == Vs Sequential
+
+
+
+= Conclusion
 
 
 
