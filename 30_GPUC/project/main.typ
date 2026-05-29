@@ -196,7 +196,7 @@ Expanding the analysis to the fitness value and speedup, both of are shown in @s
 )<seq-fitness-speedup>
 
 
-// TODO: Add paragraph
+The left image shows that each terrain has a region of fitness and that increasing the number of threads let's the fitness values fluctuating, but no large increase or decreases are noticed. For right chart, showcasing a speedup based on the 1 thread execution time, indicates the successful application of multiple threads to decrease execution time, while not having to fundamentally change the algorithm.
 
 #pagebreak()
 = Parallel <parallel>
@@ -247,7 +247,6 @@ Continuing on from the genes, the chromosomes of the algorithm have the followin
 
 Each individual chromosome has a `double` fitness value associated with itself and `geneIdx`, which is the starting index of where the genes for that chromosome begin in the list. Combining both genes & chromosome structure, result in the following organization as illustrated in @overall-structure.
 
-// TODO: Check if this is actually the structure used!
 #figure(
   image("assets/images/par/GPUC-Genes-Chromosomes.pdf", width: 80%),
   caption: [Genes & Chromosome Structure],
@@ -300,6 +299,7 @@ The following is the list of specific kernels:
 - `buildRouletteKernel`: initializes roulette values for each island
 - `gaIslandKernel`: per island GA: `roulette`, `crossover`, `mutate`
 - `migrateRingKernel`: migrates population between islands, shared ring buffer
+- `evaluateIsland`: evaluates each island's list of chromosomes
 
 The next is a list of helper kernels which are executed by the previously list of kernels:
 - `cudaInitPopulation`: initializes each island population
@@ -478,12 +478,75 @@ The charts make it conclusive, increasing the population size beyond $1000$, doe
 Strong conclusion(s) about reason for described behavior above can only be made after a more thorough analysis in @bandwidth. But initial guesses can be made, saying that the GA algorithm is already well optimized for the problem space.
 
 
-== Bandwidth x Compute <bandwidth>
+== Profiling  <bandwidth>
 
+The analyzed kernels for this section are the following: `initBufferKernel`, `initIslandBufferKernel`, `gaIslandKernel` and `evaluateIsland`. This is based on previously made analysis using Nvidia Nsight Compute.
 
-// TODO: Maybe add compute nsight image, yes!
+The following values are measures with the following parameter config:
+- population: $1000$
+- sensors: $100$
+- generations: $50$
 
-== Vs Sequential
+To start, the execution time for each kernel vs \#islands is shown in @profiling-time. This timing is the accumulated duration of $50$ generations!
+
+#figure(
+  image("assets/charts/par/profiling/kernel_time_breakdown.pdf"),
+  caption: [Kernel Execution Times vs Islands],
+) <profiling-time>
+
+From the outset, it is immediately clear that the major bottleneck is the `evaluateIsland` kernel. For this reason, the major focus will be on the kernels: `gaIsland` and `evaluateIsland`.
+
+Each kernel's primary computation throughput is shown in &@gflops-vs-islands.
+
+#figure(
+  image("assets/charts/par/profiling/gflops_vs_islands.pdf"),
+  caption: [GFLOPs vs Islands],
+) <gflops-vs-islands>
+
+Both kernels are dominant in their respective operation type -- the `gaIslandKernel` is dominantly single precision point heavy -- while the `evaluateIsland` is dominated by double precision operations. In both kernels, it is clear that the throughput declines when increasing the number if islands. Before making any conclusion, the bandwidth per kernel must be analyzed, it could be that the kernels are memory bound.
+
+The model we saw in class to use to check if a program is memory or compute bound is the roofline model, for both kernels, these can be found in @roofline-fp32-ardennes & @roofline-fp64-ardennes.
+
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 5pt,
+  [
+    #figure(
+      image("assets/charts/par/profiling/roofline_fp32_ardennes.pdf"),
+      caption: [Roofline FP32 - `gaIslandKernel` Ardennes],
+    )
+    <roofline-fp32-ardennes>
+  ],
+  [
+    #figure(
+      image("assets/charts/par/profiling/roofline_fp64_ardennes.pdf"),
+      caption: [Roofline FP64 - `evaluateIsland` Ardennes],
+    )
+    <roofline-fp64-ardennes>
+  ],
+)
+
+Based on both respective models, it can be concluded that neither kernel are neither compute or memory bound.
+
+// TODO: Paragraph
+
+#figure(
+  image("assets/charts/par/profiling/fma_utilization_vs_islands.pdf"),
+  caption: [SM Dram Throughput - Ardennes],
+)
+<sm-dram-ardennes>
+
+// TODO: paragraph
+
+#figure(
+  image("assets/charts/par/profiling/warp_occupancy_vs_islands.pdf"),
+  caption: [Warp Occupancy - Ardennes],
+)
+<sm-dram-ardennes>
+
+// TODO: paragraph
+
+== Vs Sequential <vs-seq>
 
 An comparison of the execution time & speedup between the sequential & parallel version is shown in @seq-vs-par-time. Both comparison are done with the same input configurations. For the GPU a mean is taken over all islands configurations.
 
@@ -497,7 +560,11 @@ The left chart in image @seq-vs-par-time, shows the execution time of both versi
 
 = Conclusion
 
+To summarize the points, both terrain has distinctive fitness values which is expected based on the terrain features. There is no difference in execution time for the terrains. The only factor impacting the fitness value is the \#sensors which is reasonable but no impact of other parameters requires further reasoning.
 
+The throughput & bandwidth based kernels, indicate that there is room for improvement on the GPU GA implementation. But as the analysis in <vs-seq> shows, even an not that optimized GPU implementation achieves a significant speedup compared to a single threaded sequential version and even a 32 thread version.
+
+Overall the attempt could be considered a success with better improvement's & efficiency available for the parallel algorithm.
 
 
 #pagebreak()
