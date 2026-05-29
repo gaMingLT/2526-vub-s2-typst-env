@@ -397,28 +397,49 @@ The kernels that where profiled are the following: `initBufferKernel`, `initIsla
 
 == Execution Time
 
-
+Let's start by analyzing the execution time and the impact parameters have on the resulting fitness value. The execution time vs application parameters is shown in @timing-fitness-vs-time.
 
 // TODO: Update chart sub titles
+// TODO: Update chart axis
 #figure(
   image("assets/charts/par/timing/fitness_vs_time.pdf"),
   caption: [Timing Dataset - Fitness vs Time],
-)
+) <timing-fitness-vs-time>
+
+The first distinction that becomes clear is that between the terrain types, that the Flanders area has a much higher fitness value. Changing the number of generations, regardless of population does not change the resulting value fitness value while, increasing the execution time substantially.
+
+Looking at the impact of the number of islands, for the smallest population there is a very small change in execution time when the population is $500$. There is a _very_ small increase in fitness value & execution time when increasing the population size from 5 until 20. For the larger population, the situation is reversed, the highest number of islands (20), gives a bit higher fitness value with slight reduction in execution time.
+
+The parameter which has the highest impact on fitness & execution time is the number of sensors. This is to be expected, increasing the number of sensors, increases the coverage of the grid and a resulting higher fitness value.
+
+Plotting the execution time in function of algorithm parameters can be found in @timing-time-vs-parameters.
 
 // TODO: Update chart sub titles
+// TODO: Update chart axis
 #figure(
   image("assets/charts/par/timing/time_vs_parameters.pdf"),
   caption: [Timing Dataset - Time vs Parameters],
-)
+) <timing-time-vs-parameters>
+
+The same behavior as noted previously, is more defined here. Both the generations & sensors have a negative impact on the execution time, with the sensors parameter only one resulting in an increase fitness value. For the island parameter, there is a slight increase and than downward trend when increasing the number of islands.
+
+A test was done, to check if increasing the population size to a much larger value, beyond 1000 would have any impact, regardless of previous behavior discussed. The analysis of this can be found in @big-pop-population-vs-fitness.
 
 // TODO: Update chart sub titles
+// TODO: Add #islands, generations, to charts
 #figure(
   image("assets/charts/par/big-pop/population_vs_fitness.png"),
   caption: [Large Population Dataset - Population Size vs Fitness],
-)
+) <big-pop-population-vs-fitness>
+
+The charts make it conclusive, increasing the population size beyond $1000$, does not have any effect on an increasing fitness value. The chart does again show the clear distinciton in fitness value between the Ardennes & Flanders region.
+
+=== Conclusion
+
+Strong conclusion(s) about reason for described behavior above can only be made after a more thorough analysis in @bandwidth. But initial guesses can be made, saying that the GA algorithm is already well optimized for the problem space.
 
 
-== Bandwidth x Compute
+== Bandwidth x Compute <bandwidth>
 
 
 
