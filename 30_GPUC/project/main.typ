@@ -564,6 +564,10 @@ To summarize the points, both terrain has distinctive fitness values which is ex
 
 The throughput & bandwidth based kernels, indicate that there is room for improvement on the GPU GA implementation. But as the analysis in <vs-seq> shows, even an not that optimized GPU implementation achieves a significant speedup compared to a single threaded sequential version and even a 32 thread version.
 
+The reduction in performance when increasing the number of islands per could possible be explained by the recreation of the `rawSharedData` value in each island in the `evaluateIsland` function. Future optimization could be to make this shared between all islands.
+
+The `evaluateIsland` maintains the dominant kernel, even after switching to a island based GA algorithm. Future optimization's should target this kernel and maybe looking at moving from FP64 operations to FP32, due note that the current FP64 peak has not bean reached yet.
+
 Overall the attempt could be considered a success with better improvement's & efficiency available for the parallel algorithm.
 
 
