@@ -446,6 +446,12 @@ Strong conclusion(s) about reason for described behavior above can only be made 
 
 == Vs Sequential
 
+// TODO: Paragraph
+
+#figure(
+  image("assets/charts/seq-vs-par/comparison.pdf"),
+  caption: [Sequential vs Parallel],
+) <seq-vs-par-time>
 
 
 = Conclusion
