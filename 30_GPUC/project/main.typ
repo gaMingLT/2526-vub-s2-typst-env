@@ -147,7 +147,15 @@ This section will briefly discuss the updates made to the sequential genetic alg
 
 == Implementation
 
-*TODO:* Quickly go over the implementation and changes made to the code / algorithm.
+The algorithm's reproduction loop begins by calling the `generateOffspring` function, which scales up the fitness value of all chromosomes by a large multiplier ($1000000$). The chromosome list is then iterated over to select pairs of parents. For each selection, a roulette wheel mechanism is used -- if the roulette value is lower than a randomly generated threshold, a parent is chosen; otherwise, a random index is returned.
+
+Both parents are passed to the `crossover` function, for which both parents in the `population` are retrieved and both child values from the original chromosome in the `buffer` population. A random cross over point is selected using `rng`. The list of genes (sensors) is iterate, if once the crossover point is reached, the sensor position values are swapped, before they are just copied.
+
+The next step is two `mutate` calls, iterate the current chromosome and next chromosome value, by iterating the list of genes and mutating the sensors x & y coordinates by a delta. The mutation probability is decided by RNG `prob_dist` and `delta_dist` for position delta.
+
+The mutated population is evaluated by the `evaluate` function, each chromosomes genes are evaluated by the `computeChromosomeFitness` function. First, reusable sensor values are calculated. Proceeding, `GRID_SIZE` x `GRID_SIZE` cells are iterated, for each cell the visibility factor is checked using `getVisibilityFactor`, the POD table is used to look up POD using `lookupPOD`.
+
+If the population has not reached maximum convergence, the generation loop continues until convergence is reached or generations loop is complete.
 
 == OpenMP
 
@@ -431,7 +439,7 @@ The kernels that where profiled are the following: `initBufferKernel`, `initIsla
 
 The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications listed in @desktop.
 
-// TODO: Update
+
 #figure(
   table(
     columns: (0.8fr, 1fr),
@@ -446,8 +454,8 @@ The benchmarks were executed on a KUbuntu 25.04 desktop, with the specifications
     [Kernel Version], [6.6.87.2-microsoft-standard-WSL2],
     [NVCC], [13.2, V13.2.51],
     [NCU], [Version 2026.1.0.0 (build 37166530)],
-    [GCC], [*TODO*],
-    [OpenMP], [*TODO*],
+    [GCC], [gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0],
+    [OpenMP], [201511],
   ),
   caption: [Desktop Specifications],
 ) <desktop>
