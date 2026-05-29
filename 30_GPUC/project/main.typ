@@ -446,15 +446,18 @@ Strong conclusion(s) about reason for described behavior above can only be made 
 
 == Vs Sequential
 
-// TODO: Paragraph
+An comparison of the execution time & speedup between the sequential & parallel version is shown in @seq-vs-par-time. Both comparison are done with the same input configurations. For the GPU a mean is taken over all islands configurations.
 
 #figure(
   image("assets/charts/seq-vs-par/comparison.pdf"),
   caption: [Sequential vs Parallel],
 ) <seq-vs-par-time>
 
+The left chart in image @seq-vs-par-time, shows the execution time of both versions and the speedup on right chart in the image. The speedup chart shows that while the naive application of OpenMP library on the sequential version  delivers an impressive speedup between the 32 thread version and single thread version -- the GPU based algorithm is substantially faster compared to the single threaded version. Proving the usage and implementation of GA algorithm on GPU based devices has clear benefit.
+
 
 = Conclusion
+
 
 
 
