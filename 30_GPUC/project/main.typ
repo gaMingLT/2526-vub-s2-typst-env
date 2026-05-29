@@ -308,9 +308,8 @@ The next is a list of helper kernels which are executed by the previously list o
 - `mutate`: mutates the genes for selection chromosome
 - `getVisibilityFactor`: retrieves the visibility factor based on source & target coordinates
 - `lookupPODSq`: POD (Probability of Detection) lookup
-// TODO: Rename and remove shared
-- `calculateOverlapPenaltyShared`: calculates penalty if sensor overlap
-
+- `calculateOverlapPenalty`: calculates penalty if sensor overlap
+- `calculateCellPOD`: calculate sensor POD based on sensor coordinates
 
 
 #set page(columns: 2)
@@ -318,7 +317,7 @@ The next is a list of helper kernels which are executed by the previously list o
 
 == Flow <flow>
 
-// TODO:
+
 #figure(
   grid(
     [
@@ -371,11 +370,51 @@ If the `maxFitness` value has not reached the convergence value, the generation 
 
 == Kernels <kernels>
 
-This subsection will analyze the kernels more in depth.
+This subsection will discuss some of the kernels more in depth.
 
 
+=== `gaIslandKernel`
+
+Each island is responsible for executing the genetic algorithm in isolation. The genetic algorithm includes the same steps as with the sequential version.
+
+Since each island is constrained to an island, it has to work of the main list of chromosome, thus each island has a size based on the number of island and population size (\#chromosomes).
+
+For each island, each thread is responsible for generating several pairs `(x,y)` of offspring, the offspring is selected by calling `rouletteSelect`. The global parent coordinates are found by adding the island offset. Than the `crossOver` step is executed using parent indices, followed by two `mutate` calls on the `buffer` population.
 
 
+== `evaluateIsland`
+
+The next step after the GA algorithm has been applied on each respective island is to check the fitness of each island's chromosomes. For this particular kernel, the number of blocks launched, match the size (\#chromosomes) for each island.
+
+The first step in the evaluation process, is the `extern __shared__ char rawSharedData[]` is populated by a single thread. Once the shared data object is populated the grid cell loop can start.
+
+For each cell for which the kernel is responsible for the `calculateCellPOD` function is called. The function will iterate the list of sensors, calculate the visibility factor between sensor & target coordinates, apply a overlap penalty if needed and return the combined POD value.
+
+The localPOD is added to a `blockSum` variable indexed by `threadIdx.x`, the array of local POD values is than summed by using parallel reduction on the `blockSum` array.
+
+The thread with id 0, will divided the POD by the number of grid cells. The resulting fitness value is writen to the `fitnessOut` value, an array of all chromosome fitness values.
+
+
+=== `migrateRingKernel`
+
+The configuration of the migration of chromosomes between the islands can be seen in @kernel-ring.
+
+#figure(
+  image("assets/images/par/GPUC-Kernel.pdf", width: 60%),
+  caption: [Kernel Ring Blocks],
+) <kernel-ring>
+
+Since each island has a particular size, each is responsible for a set of chromosomes. By viewing the chromosomes list as a ring, which wraps around to the beginning again, when the end is reach using `%`, migration between islands can be performed. The process of the migration step is visualized in illustration @migrate-kernel.
+
+
+#figure(
+  image("assets/images/par/GPUC-Migrate.pdf", width: 80%),
+  caption: [Migrate Kernel Workings],
+) <migrate-kernel>
+
+The migration step is performed from the point of view from island $k$ and target island $k+1$. Each island has its own offset, respectively identified by `src_offset` and `dst_offset`.
+
+A random `src` index will be found using randomness, than the chromosome with the worst fitness value in target island will be found. Than, if the fitness value of the `src` is greater than that of `dst`, the `geneIdx` are retrieved and the genes from `src` are copied to `dst`.
 
 #pagebreak()
 = Analysis <analysis>
@@ -399,7 +438,7 @@ The kernels that where profiled are the following: `initBufferKernel`, `initIsla
 
 Let's start by analyzing the execution time and the impact parameters have on the resulting fitness value. The execution time vs application parameters is shown in @timing-fitness-vs-time.
 
-// TODO: Update chart sub titles
+
 // TODO: Update chart axis
 #figure(
   image("assets/charts/par/timing/fitness_vs_time.pdf"),
