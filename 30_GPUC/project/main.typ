@@ -442,7 +442,7 @@ Strong conclusion(s) about reason for described behavior above can only be made 
 == Bandwidth x Compute <bandwidth>
 
 
-
+// TODO: Maybe add compute nsight image, yes!
 
 == Vs Sequential
 
@@ -457,7 +457,6 @@ The left chart in image @seq-vs-par-time, shows the execution time of both versi
 
 
 = Conclusion
-
 
 
 
