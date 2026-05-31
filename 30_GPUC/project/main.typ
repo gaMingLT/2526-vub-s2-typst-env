@@ -14,7 +14,7 @@
 #set text(lang: "en")
 
 #show: ilm.with(
-  title: [Project],
+  title: [Project: Genetic Algorithm],
   authors: "Milan Lagae",
   // TODO: Change date!
   date: datetime(year: 2026, month: 06, day: 17),
@@ -48,25 +48,28 @@
 // #colbreak()
 = Intro
 
-This report will discuss the assignment 'Project' for the course: 'GPU Computing'. First, the context of the application of a Genetic Algorithm will be discussed for the problem space add hand. After the context, the pipeline for data preparation and more information about the problem will be discussed in @pipeline. Continuing from the pipeline, the updated sequential will be discussed including the naive speedup methods. Finally, the focus of the assignment the parallel version in @parallel. Concluding, both version will be analyzed in @analysis.
+This report presents "Project: Genetic Algorithm" assignment for the GPU Computing course. It begins by establishing the context of applying a Genetic Algorithm to the specific problem space in @context. @pipeline then outlines the data preparation pipeline and provides further details on the problem itself.
+
+Following, the updated sequential implementation and initial naive speedup methods are detailed @sequential. Finally, the report focuses on the parallel implementation discussed in @parallel — before concluding with a comparative performance analysis of both versions in @analysis.
 
 
-== Declaration of AI Usage
+// == Declaration of AI Usage
 
-For starting the project and the start up phases AI was used. The repository for preprocessing the DEM data can be found here @dem_preprocessing. As a starting point, the following repository was used for both the sequential & parallel version of the algorithm: @cuda_starting_point. The initial repository was updated to reflect the modern features, such as the deprecated `rand()` function and more. After the code was updated, some AI help was used to think through the genetic algorithm structures.
+// For starting the project and the start up phases AI was used. The repository for preprocessing the DEM data can be found here @dem_preprocessing. As a starting point, the following repository was used for both the sequential & parallel version of the algorithm: @cuda_starting_point. The initial repository was updated to reflect the modern features, such as the deprecated `rand()` function and more. After the code was updated, some AI help was used to think through the genetic algorithm structures.
+
 
 // #pagebreak()
 = Context <context>
 
-The problem for which the genetic algorithm is used, is a problem widely occurring in the wireless networking world @yoonEfficientGeneticAlgorithm2013b. Where, wireless internet providers must decide where to position there service towers to provided the maximum or greatest coverage, taking into account terrain features.
+The problem addressed by this genetic algorithm is a well-known challenge in wireless networking: optimizing service tower placement to maximize coverage while accounting for terrain variations @yoonEfficientGeneticAlgorithm2013b. Specifically, wireless internet providers must strategically position their infrastructure to ensure optimal signal distribution across complex geographic landscapes.
 
-This identical problem, occurs in the military domain, were with a limited set of sensors, the greatest coverage (or detection probability) must be gained with the available sensors @ridderMissionPlanningJoint2005.
+An identical problem arises within the military domain, where a limited set of sensors must be strategically deployed to maximize total coverage or detection probability @ridderMissionPlanningJoint2005.
 
-For this reasons, there have been historically been several attempts with success add using Genetic Algorithms to solve this particular problem @dhillonSensorPlacementEffective.
+For these very reasons, there have been historically been several attempts with success in applying Genetic Algorithms to solve this particular problem @dhillonSensorPlacementEffective.
 
-There is also a variation on this problem, where two types of sensors are placed on the ground in hilly terrain and are used to check detection of vehicles trying to pass @seoEfficientLargeScaleSensor2016. The algorithm is used to place two types of sensors: FLIR & Seismic.
+A notable variation of this problem involves the deployment of two distinct sensor types, Forward-Looking Infrared (FLIR) and seismic, across hilly terrain to detect approaching military vehicles @seoEfficientLargeScaleSensor2016. In this scenario, the algorithm is utilized to optimize the placement strategy for both sensor types.
 
-For this reason, this paper is the implementation of a scoped down version of the genetic algorithm in @seoEfficientLargeScaleSensor2016. It uses only one type of sensor FLIR placed, 1.8m above the ground, illustration can be seen in @terrain-sensor.
+Consequently, this paper implements a scoped-down version of the genetic algorithm presented in @seoEfficientLargeScaleSensor2016. The implementation focuses exclusively on a single sensor type: a Forward-Looking Infrared (FLIR) sensor positioned 1.8 m above the ground—as illustrated in Figure @terrain-sensor.
 
 
 #pagebreak()
@@ -382,7 +385,7 @@ Since each island is constrained to an island, it has to work of the main list o
 For each island, each thread is responsible for generating several pairs `(x,y)` of offspring, the offspring is selected by calling `rouletteSelect`. The global parent coordinates are found by adding the island offset. Than the `crossOver` step is executed using parent indices, followed by two `mutate` calls on the `buffer` population.
 
 
-== `evaluateIsland`
+=== `evaluateIsland`
 
 The next step after the GA algorithm has been applied on each respective island is to check the fitness of each island's chromosomes. For this particular kernel, the number of blocks launched, match the size (\#chromosomes) for each island.
 
@@ -527,14 +530,6 @@ The model we saw in class to use to check if a program is memory or compute boun
 )
 
 Based on both respective models, it can be concluded that neither kernel are neither compute or memory bound.
-
-// TODO: Paragraph
-
-#figure(
-  image("assets/charts/par/profiling/fma_utilization_vs_islands.pdf"),
-  caption: [SM Dram Throughput - Ardennes],
-)
-<sm-dram-ardennes>
 
 // TODO: paragraph
 
