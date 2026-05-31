@@ -238,7 +238,7 @@ The genes of the genetic algorithm are structured as `double` value as shown in 
   caption: [Gene Structure],
 ) <gene-structure>
 
-Each gene will contain one of the axis of a sensors coordinates: $(x,y)$. The genes (sensor) location are stored in one continues list as shown in illustration @genes-structure.
+Each gene will contain one of the axis of a sensors coordinates: $(x,y)$. The gene's (sensor) location are stored in one continues list as shown in illustration @genes-structure.
 
 #figure(
   image("assets/images/par/GPUC-Genes.pdf", width: 80%),
@@ -269,7 +269,7 @@ Each individual chromosome has a `double` fitness value associated with itself a
   caption: [Genes & Chromosome Structure],
 ) <overall-structure>
 
-The `geneIdx` value is an offset within the list of overall genes to which the chromosome stores its responsible genes. Based on this offset, the sensor location can be accessed. Each chromosomes also maintains a `fitnessValue` for the list of responsible genes.
+The `geneIdx` value is an offset within the list of overall genes to which the chromosome stores its responsible genes. Based on this offset, the sensor location can be accessed. Each chromosome maintains a `fitnessValue` indicating the fitness value for his list of genes.
 
 Walking up the ladder of structures of the algorithm, the over arching one is the `population_t` structure, as illustrated in @population-structure.
 
@@ -302,7 +302,7 @@ Walking up the ladder of structures of the algorithm, the over arching one is th
   caption: [Population Structure],
 ) <population-structure>
 
-It stores the FLIR parameters, terrain parameters, GA parameters (mutation, etc), the earlierly listed chromosomes & genes list and the pod table, terrain elevation data and finally viewshed LUT.
+The structure stores the FLIR parameters, terrain parameters, GA parameters (mutation, etc), the chromosomes & genes list, the pod table, terrain elevation data and viewshed LUT.
 
 
 == Kernels Overview <overview>
@@ -318,7 +318,7 @@ The following is the list of specific kernels:
 - `migrateRingKernel`: migrates population between islands, shared ring buffer
 - `evaluateIsland`: evaluates each island's list of chromosomes
 
-The next is a list of helper kernels which are executed by the previously list of kernels:
+The next is a list of helper kernels which are executed by the preceding list of kernels:
 - `cudaInitPopulation`: initializes each island population
 - `rouletteSelect`: performs selection of chromosome
 - `crossover`: performs genes crossover between current & new population
@@ -354,15 +354,15 @@ The explanation of the algorithm flow will use the following parameters:
 - generation: $100$
 - \#threads/block: $512$
 
-The genetic algorithm starts of with initializing two populations, a `buffer` and main `population` population. The `cudaInitPopulation` is the function where all the CPU code is copied into the GPU's memory.
+The genetic algorithm starts of with initializing two populations, a `buffer` and main `population`. The `cudaInitPopulation` is the function where the CPU memory is copied into the GPU's memory.
 
-Once the buffers have been initialized, the size of the `sharedMemSize` object is calculated for use later in the `evaluateIsland` kernel. The `d_pop1` is set to `cudaPopulation` and `d_pop2` is set to `cudaBuffer`.
+Once the buffers have been initialized, the size of the `sharedMemSize` object is calculated for later use in the `evaluateIsland` kernel. The `d_pop1` is set to `cudaPopulation` and `d_pop2` is set to `cudaBuffer`.
 
 The `d_pop1` kernel is initialized using `initBufferKernel`. For the example parameters, this will result in 3 blocks being launched.
 
-Each island requires a `curand` state, this initialization is handled by the `setupCurand` kernel, in the example, it will launch $5$ blocks.
+Each island requires a `curand` state. This initialization is handled by the `setupCurand` kernel, in the example, it will launch $5$ blocks.
 
-In an attempt at speeding up the execution of the evaluation of the chromosomes, `cudaStream`'s #footnote[https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/asynchronous-execution.html] where used. The numbers of streams equals the number of islands.
+In an attempt at speeding up the execution of the evaluation of the chromosomes, `cudaStream`'s #footnote[https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/asynchronous-execution.html] were used. The number of streams equals the number of islands.
 
 After the setup, the generation loops initiates.
 
@@ -370,17 +370,18 @@ The first step is the `initIslandBufferKernel`, it will initialize each kernel s
 
 Before the GA can be executed, the roulette selection must be setup by `buildRouletteKernel`, this is a single block & single thread execution.
 
-Each `gaIsland` kernel will launch 1 block and in total 5 blocks will be executed. Each thread will perform some iterations to select some participants for selection.
+// TODO: Check this again in the code
+Each `gaIsland` kernel will launch 1 block and in total 5 blocks will be executed. Each thread will perform some iterations to select some chromosomes for selection.
 
 #set page(columns: 1)
 
-Selection is performed by `rouletteSelect`, for 2 parents, the 2 parents are passed to `crossOver`, and result is passed to `mutate` (x, y) coordinates. The results of which are written to the `buffer` population. At the end the `threadState` is saved into global states.
+Selection is performed by `rouletteSelect`. For each pair of selected parents, `crossOver`is applied to generate offspring. The resulting offspring then undergoes mutation of its (x,y) coordinates through `mutate`. The mutated individuals are written to the `buffer` population. Finally, the `threadState` is stored in the global states.
 
-After the population of each kernel is 'updated' each island can be evaluated for its fitness. Before doing so, a pointer swap is performed. The previously `buffer` population (`d_pop2`) becomes `d_pop1` and is evaluated.
+Once the population of each kernel is 'updated', each island can be evaluated for its fitness. Before doing so, a pointer swap is performed. The previous `buffer` population (`d_pop2`) is swapped with `d_pop1`, the latter value is evaluated.
 
 Each island and population is evaluated separately `evaluateIsland`, for each island, 200 blocks are spawned, matching the number of chromosomes.
 
-Global migration between the island only occurs every *5* generations as set by the `migration_interval`. This allows each island grow, without incurring migration cost every generation. At the same time, every *5* generations, the chromosomes are checked to see if any have reached the converged.
+Global migration between the island only occurs every *5* generations, as set by the `migration_interval`. This allows each island to independently grow, without incurring migration cost every generation. At the same time, every *5* generations, the chromosomes are checked to see if any have reached convergence.
 
 If the `maxFitness` value has not reached the convergence value, the generation execution continues.
 
@@ -394,22 +395,22 @@ This subsection will discuss some of the kernels more in depth.
 
 Each island is responsible for executing the genetic algorithm in isolation. The genetic algorithm includes the same steps as with the sequential version.
 
-Since each island is constrained to an island, it has to work of the main list of chromosome, thus each island has a size based on the number of island and population size (\#chromosomes).
+Since each island is constrained to an island, it has to work of the main array of chromosome. Each island has a size based on the number of island and population size (\#chromosomes).
 
 For each island, each thread is responsible for generating several pairs `(x,y)` of offspring, the offspring is selected by calling `rouletteSelect`. The global parent coordinates are found by adding the island offset. Than the `crossOver` step is executed using parent indices, followed by two `mutate` calls on the `buffer` population.
 
 
 === `evaluateIsland`
 
-The next step after the GA algorithm has been applied on each respective island is to check the fitness of each island's chromosomes. For this particular kernel, the number of blocks launched, match the size (\#chromosomes) for each island.
+The next step after the GA algorithm has been applied on each respective island in order to check the fitness of each island's chromosomes. For this particular kernel, the number of blocks launched, matches the island size (\#chromosomes).
 
-The first step in the evaluation process, is the `extern __shared__ char rawSharedData[]` is populated by a single thread. Once the shared data object is populated the grid cell loop can start.
+The first step in the evaluation process, is populating the shared data object.  `extern __shared__ char rawSharedData[]` is populated by a single thread. Once the shared data object is populated, the grid cell loop can start.
 
-For each cell for which the kernel is responsible for the `calculateCellPOD` function is called. The function will iterate the list of sensors, calculate the visibility factor between sensor & target coordinates, apply a overlap penalty if needed and return the combined POD value.
+For each cell in the grid ($200 * 200$) `calculateCellPOD` function is called. The function iterates the list of sensors -- calculates the visibility factor between sensor & target coordinates -- applies overlap penalty as needed and returns the combined POD value.
 
 The localPOD is added to a `blockSum` variable indexed by `threadIdx.x`, the array of local POD values is than summed by using parallel reduction on the `blockSum` array.
 
-The thread with id 0, will divided the POD by the number of grid cells. The resulting fitness value is writen to the `fitnessOut` value, an array of all chromosome fitness values.
+The thread with id 0, will divide the POD by the number of grid cells. The resulting fitness value is written to the `fitnessOut` value, an array of all chromosome fitness values.
 
 
 === `migrateRingKernel`
@@ -421,7 +422,7 @@ The configuration of the migration of chromosomes between the islands can be see
   caption: [Kernel Ring Blocks],
 ) <kernel-ring>
 
-Since each island has a particular size, each is responsible for a set of chromosomes. By viewing the chromosomes list as a ring, which wraps around to the beginning again, when the end is reach using `%`, migration between islands can be performed. The process of the migration step is visualized in illustration @migrate-kernel.
+Since each island has a specific size, each is responsible for a corresponding set of chromosomes. By viewing the chromosome list as a ring, that wraps around to the beginning, when the end is reached using `%` operator, migration between islands can be implemented @chengAcceleratingGeneticAlgorithms2019. The migration process is visualized in @migrate-kernel.
 
 
 #figure(
@@ -431,7 +432,8 @@ Since each island has a particular size, each is responsible for a set of chromo
 
 The migration step is performed from the point of view from island $k$ and target island $k+1$. Each island has its own offset, respectively identified by `src_offset` and `dst_offset`.
 
-A random `src` index will be found using randomness, than the chromosome with the worst fitness value in target island will be found. Than, if the fitness value of the `src` is greater than that of `dst`, the `geneIdx` are retrieved and the genes from `src` are copied to `dst`.
+A random `src` index will be found using randomness, accordingly the chromosome with the worst fitness value in target island will be selected. If the fitness value of the `src` is greater than that of `dst`, the `geneIdx` are retrieved and the genes from `src` are copied to `dst`.
+
 
 #pagebreak()
 = Analysis <analysis>
