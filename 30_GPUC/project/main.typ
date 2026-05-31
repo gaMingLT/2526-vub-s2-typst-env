@@ -17,7 +17,7 @@
   title: [Project: Genetic Algorithm],
   authors: "Milan Lagae",
   // TODO: Change date!
-  date: datetime(year: 2026, month: 06, day: 17),
+  date: datetime(year: 2026, month: 06, day: 15),
 
   bibliography: bibliography("references.bib"),
   table-of-contents: outline(depth: 2),
@@ -438,70 +438,67 @@ A random `src` index will be found using randomness, accordingly the chromosome 
 #pagebreak()
 = Analysis <analysis>
 
-This section will perform an analysis of the parallel GA implementation and its metrics. After an analysis of the parallel implementation is performed, a execution time comparison will be made to the sequential version.
+This section will analyze the performance of the parallel GA implementation. Once this analysis is performed, an execution time comparison will be done to the sequential version.
 
 == Methodology
 
 The timing data collected for the sequential version executed *5* runs per configuration. The accompanying charts for the Cov & Std dev can be found in @charts-seq.
 
-For the parallel implementation the timing data collection was made using the `std::chrono` library inside of the program. For each program execution *5* runs were collected. The accompanying charts for the Cov & Std dev can be found in @charts-par-timing.
+For the parallel implementation the timing data collection was made using the `std::chrono` library inside of the program. For each program execution, *5* runs were collected. The accompanying charts for the Cov & Std dev can be found in @charts-par-timing.
 
-Execution timing data for the sequential & parallel version are all within guidelines.
+Execution timing data for the sequential & parallel version are within guidelines.
 
-Collection metrics for the parallel version regarding bandwidth, etc, was a bit more difficult, due to the number of kernels launched. For this reason the `ncu` #footnote[https://developer.nvidia.com/nsight-compute] CLI was used in combination with `benchkit`i #footnote[https://github.com/open-s4c/benchkit]. This allowed for collecting targeted per kernel metrics using preset profiles for the wanted kernels.
+Collection metrics for the parallel version regarding bandwidth, etc, was a bit more difficult, due to the number of kernels launched. For this reason the `ncu` #footnote[https://developer.nvidia.com/nsight-compute] CLI was used in combination with `benchkit` #footnote[https://github.com/open-s4c/benchkit]. This made it possible to collect targeted per-kernel metrics by applying predefined profiles to the selected metrics.
 
-The kernels that where profiled are the following: `initBufferKernel`, `initIslandBufferKernel`, `gaIslandKernel` and `evaluateIsland`. These kernels are the most involved in the algorithm, based on previous Nvidia Nsight Compute analysis. The collected metrics for each kernel where based on the `detailed` set. Due to how much time each profiling run takes, the number of iterations was reduced compared to the timing dataset. For all parallel benchmarks, the number of threads per block was fixed to *512*.
+The profiled kernels are the following: `initBufferKernel`, `initIslandBufferKernel`, `gaIslandKernel` and `evaluateIsland`. These kernels are the most involved in the algorithm, based on previous Nvidia Nsight Compute analysis. The collected metrics for each kernel were based on the `detailed` set. Due to how much time each profiling run takes, the number of iterations was reduced compared to the timing dataset. For all parallel benchmarks, the number of threads per block was fixed to *512*.
 
 
+
+#pagebreak()
 == Execution Time
 
 Let's start by analyzing the execution time and the impact parameters have on the resulting fitness value. The execution time vs application parameters is shown in @timing-fitness-vs-time.
 
 
-// TODO: Update chart axis
 #figure(
   image("assets/charts/par/timing/fitness_vs_time.pdf"),
   caption: [Timing Dataset - Fitness vs Time],
 ) <timing-fitness-vs-time>
 
-The first distinction that becomes clear is that between the terrain types, that the Flanders area has a much higher fitness value. Changing the number of generations, regardless of population does not change the resulting value fitness value while, increasing the execution time substantially.
+The first distinction that becomes clear is that between the terrain types, that the Flanders area has a much higher fitness value. Changing the number of generations, regardless of population does not change the resulting fitness value while increasing the execution time substantially.
 
-Looking at the impact of the number of islands, for the smallest population there is a very small change in execution time when the population is $500$. There is a _very_ small increase in fitness value & execution time when increasing the population size from 5 until 20. For the larger population, the situation is reversed, the highest number of islands (20), gives a bit higher fitness value with slight reduction in execution time.
+The number of islands has a negligible effect on the execution time for the smallest population of $500$. There is a _very_ small increase in fitness value & execution time when increasing the population size from 5 until 20. For the larger population, the situation is reversed; the highest number of islands (20), gives a slightly higher fitness value with slight reduction in execution time.
 
 The parameter which has the highest impact on fitness & execution time is the number of sensors. This is to be expected, increasing the number of sensors, increases the coverage of the grid and a resulting higher fitness value.
 
 Plotting the execution time in function of algorithm parameters can be found in @timing-time-vs-parameters.
 
-// TODO: Update chart sub titles
-// TODO: Update chart axis
 #figure(
   image("assets/charts/par/timing/time_vs_parameters.pdf"),
   caption: [Timing Dataset - Time vs Parameters],
 ) <timing-time-vs-parameters>
 
-The same behavior as noted previously, is more defined here. Both the generations & sensors have a negative impact on the execution time, with the sensors parameter only one resulting in an increase fitness value. For the island parameter, there is a slight increase and than downward trend when increasing the number of islands.
+The same behavior as noted previously, is more defined here. Both the generations & sensors parameters have a negative impact on the execution time. The sensor parameter is only one that results in an increase of the fitness value. For the island parameter, there is a slight increase and downward trend when increasing the number of islands.
 
-A test was done, to check if increasing the population size to a much larger value, beyond 1000 would have any impact, regardless of previous behavior discussed. The analysis of this can be found in @big-pop-population-vs-fitness.
+In addition, a test was carried out, to check if increasing the population size to a much larger value, beyond 1000 would have any impact, regardless of previous behavior discussed. The analysis of this can be found in @big-pop-population-vs-fitness. The population was varied with following fixed values: sensors: $100$; generations: $50$; islands: $10$.
 
-// TODO: Update chart sub titles
-// TODO: Add #islands, generations, to charts
 #figure(
   image("assets/charts/par/big-pop/population_vs_fitness.png"),
   caption: [Large Population Dataset - Population Size vs Fitness],
 ) <big-pop-population-vs-fitness>
 
-The charts make it conclusive, increasing the population size beyond $1000$, does not have any effect on an increasing fitness value. The chart does again show the clear distinciton in fitness value between the Ardennes & Flanders region.
+The charts make it conclusive; increasing the population size beyond $1000$, does not have any effect on an increasing fitness value. The chart does again show the plain distinciton in fitness value between the ardennes & flanders region.
 
 === Conclusion
 
-Strong conclusion(s) about reason for described behavior above can only be made after a more thorough analysis in @bandwidth. But initial guesses can be made, saying that the GA algorithm is already well optimized for the problem space.
+Definitive conclusions regrading this behavior require the more detailed analysis provided in section @profiling. However, initial assessment suggest that the GA algorithm is already well optimized for the problem space.
 
 
-== Profiling  <bandwidth>
+== Profiling  <profiling>
 
 The analyzed kernels for this section are the following: `initBufferKernel`, `initIslandBufferKernel`, `gaIslandKernel` and `evaluateIsland`. This is based on previously made analysis using Nvidia Nsight Compute.
 
-The following values are measures with the following parameter config:
+The following values are measured with the following parameter config:
 - population: $1000$
 - sensors: $100$
 - generations: $50$
@@ -524,7 +521,7 @@ Each kernel's primary computation throughput is shown in &@gflops-vs-islands.
 
 Both kernels are dominant in their respective operation type -- the `gaIslandKernel` is dominantly single precision point heavy -- while the `evaluateIsland` is dominated by double precision operations. In both kernels, it is clear that the throughput declines when increasing the number if islands. Before making any conclusion, the bandwidth per kernel must be analyzed, it could be that the kernels are memory bound.
 
-The model we saw in class to use to check if a program is memory or compute bound is the roofline model, for both kernels, these can be found in @roofline-fp32-ardennes & @roofline-fp64-ardennes.
+To evaluate whether the kernels are memory- or compute-bound, the Roofline model was employed. The respective Roofline analyses for both FP32 and FP64 precision variants are presented in @roofline-fp32-ardennes and @roofline-fp64-ardennes.
 
 #grid(
   columns: (1fr, 1fr),
@@ -545,41 +542,43 @@ The model we saw in class to use to check if a program is memory or compute boun
   ],
 )
 
-Based on both respective models, it can be concluded that neither kernel are neither compute or memory bound.
-
-// TODO: paragraph
+Based on both respective models, it can be concluded that neither kernel are neither compute or memory bound. Before making a final determination, the warp occupancy percentage for both kernels is shown in @sm-warp-ardennes.
 
 #figure(
   image("assets/charts/par/profiling/warp_occupancy_vs_islands.pdf"),
   caption: [Warp Occupancy - Ardennes],
 )
-<sm-dram-ardennes>
+<sm-warp-ardennes>
 
-// TODO: paragraph
+
+The charts in @sm-warp-ardennes, showcase the warp occupancy of all the $46$ SM on the RTX 3070 in percentage. For the `gaIslandKernel` is shows that increasing the island increases the occupancy of and thus better utilization of available resources.
+
+For the `evaluateIsland` it is a different story, there increasing the number of islands shows a decrease in in warp occupancy. The average occupancy level of the `evaluateIsland` is higher than compared to the other kernel.
+
 
 == Vs Sequential <vs-seq>
 
-An comparison of the execution time & speedup between the sequential & parallel version is shown in @seq-vs-par-time. Both comparison are done with the same input configurations. For the GPU a mean is taken over all islands configurations.
+A comparison of the execution time & speedup between the sequential & parallel version is shown in @seq-vs-par-time. Both comparisons are done with the same input configurations. For the GPU a mean is taken over all islands configurations.
 
 #figure(
   image("assets/charts/seq-vs-par/comparison.pdf"),
   caption: [Sequential vs Parallel],
 ) <seq-vs-par-time>
 
-The left chart in image @seq-vs-par-time, shows the execution time of both versions and the speedup on right chart in the image. The speedup chart shows that while the naive application of OpenMP library on the sequential version  delivers an impressive speedup between the 32 thread version and single thread version -- the GPU based algorithm is substantially faster compared to the single threaded version. Proving the usage and implementation of GA algorithm on GPU based devices has clear benefit.
+The left chart in image @seq-vs-par-time shows the execution time of both versions, and the speedup on right chart in the image. The speedup chart shows that, the naive application of OpenMP library on the sequential version  delivers an impressive speedup between the 32 thread version and single thread version, the GPU based algorithm is substantially faster compared to the single threaded version. Proving the usage and implementation of GA algorithm on GPU based devices has clear benefit.
 
 
 = Conclusion
 
-To summarize the points, both terrain has distinctive fitness values which is expected based on the terrain features. There is no difference in execution time for the terrains. The only factor impacting the fitness value is the \#sensors which is reasonable but no impact of other parameters requires further reasoning.
+To summarize the points, both terrain have distinctive fitness values which are expected based on the terrain features. There is no difference in execution time for the terrains. The only factor impacting the fitness value is the \#sensors which is reasonable, but no impact of other parameters requires further reasoning.
 
-The throughput & bandwidth based kernels, indicate that there is room for improvement on the GPU GA implementation. But as the analysis in <vs-seq> shows, even an not that optimized GPU implementation achieves a significant speedup compared to a single threaded sequential version and even a 32 thread version.
+The throughput & bandwidth based kernels, indicate that there is room for improvement on the GPU GA implementation. But, as the analysis in @vs-seq shows, even an not that well optimized GPU implementation achieves a significant speedup compared to a single threaded sequential version and 32 threaded sequential implementation.
 
-The reduction in performance when increasing the number of islands per could possible be explained by the recreation of the `rawSharedData` value in each island in the `evaluateIsland` function. Future optimization could be to make this shared between all islands.
+The reduction in performance, when increasing the number of islands could possible be explained by the recreation of the `rawSharedData` value in each island in the `evaluateIsland` function. Future optimization should look in to making this shared between all islands.
 
-The `evaluateIsland` maintains the dominant kernel, even after switching to a island based GA algorithm. Future optimization's should target this kernel and maybe looking at moving from FP64 operations to FP32, due note that the current FP64 peak has not bean reached yet.
+The `evaluateIsland` maintains the dominant kernel, even after switching to an island based GA algorithm. Future optimization's should target this kernel and maybe looking at moving from FP64 operations to FP32, due note that the current FP64 peak has not been reached yet.
 
-Overall the attempt could be considered a success with better improvement's & efficiency available for the parallel algorithm.
+Overall, the attempt could be considered a success with better improvement's & efficiency available for the parallel algorithm.
 
 
 #pagebreak()
