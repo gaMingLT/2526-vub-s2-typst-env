@@ -53,7 +53,6 @@ This report presents "Project: Genetic Algorithm" assignment for the GPU Computi
 Following, the updated sequential implementation and initial naive speedup methods are detailed in @sequential. Finally, the report focuses on the parallel implementation discussed in @parallel — before concluding with a comparative performance analysis of both versions in @analysis.
 
 
-FIXME: Make sure this is present in the final version
 == Declaration of AI Usage
 
 For starting the project and the start up phases AI was used. The repository for preprocessing the DEM data can be found here @dem_preprocessing. As a starting point, the following repository was used for both the sequential & parallel version of the algorithm: @cuda_starting_point. The initial repository was updated to reflect the modern features, such as the deprecated `rand()` function and more. After the code was updated, some AI help was used to think through the genetic algorithm structures.
