@@ -162,22 +162,21 @@ This section will discuss the updates made to the sequential implementation of a
 
 == Implementation
 
-The algorithm's generation loop begins by calling the `generateOffspring` function, which scales up the fitness value of all chromosomes by a large multiplier ($1000000$). The chromosome list is then iterated over to select pairs of parents. For each selection, a roulette wheel mechanism is used -- if the roulette value is lower than a randomly generated threshold, a parent is chosen; otherwise, a random index is returned.
+The algorithm's generation loop begins by calling the `generateOffspring` function, which scales up the fitness value of all chromosomes by a large multiplier ($1000000$). The chromosome list is then iterated over to select pairs of parents. For each selection, a roulette wheel mechanism is used. If the roulette value is lower than a randomly generated threshold, a parent is chosen; otherwise, a random index is returned.
 
-Both parents are passed to the `crossover` function, for which both parents in the `population` are retrieved and both child values from the original chromosome in the `buffer` population. A random cross over point is selected using `rng`. The list of genes (sensors) is iterated. Once the cross over threshold is reached, the sensor position values are swapped, before the threshold they are copied.
+Both parents are passed to the `crossover` function, for which both parents in the `population` are retrieved and both child values from the original chromosome in the `buffer` population. A random cross over point is selected using `rng`. The list of genes (sensors) is iterated. Once the cross over threshold is reached, the sensor position values are swapped, before the threshold are copied.
 
 The next step in the flow is mutating of 2 consecutive chromosomes by two `mutate` calls. They respectively iterate the list of genes and mutate genes values (x,y) coordinates by a random delta. Mutation probability is decided by a RNG based `prob_dist` and `delta_dist`.
 
 The mutated population is evaluated by the `evaluate` function. All genes of each chromosome are evaluated by the `computeChromosomeFitness` function. First, shared sensor values are calculated. Proceeding, `GRID_SIZE` x `GRID_SIZE` cells are iterated. For each cell, the visibility factor is checked using `getVisibilityFactor`, the POD table is used to look up POD using `lookupPOD`.
 
-If the population has not reached the indicated maximum convergence value the generation loop will continue.
+If the population has not reached the indicated maximum convergence value, the generation loop will continue.
 
 
 == OpenMP
 
-Several `for` loop inside of the code have received a `#pragma` for enabling acceleration with earlier named OpenMP library.
+Several `for` loop inside of the code have received a `#pragma` for enabling acceleration with earlier named OpenMP library. Due note that this is a naive application of the use of OpenMP pragma's, and is an indication of how a naive application compares to a more tailored made parallel genetic algorithm using Cuda.
 
-Due note that this is a naive application of the use of OpenMP pragma's, and is an indication of how a naive application compares to a more handcrafted version genetic algorithm using Cuda.
 
 #pagebreak()
 == Results
@@ -190,7 +189,7 @@ This subsection will showcase the results of applying OpenMP pragma's on the gen
 ) <openmp-threads>
 
 
-As can be seen in the image, the addition of even naive application of OpenMP pragmas, results in a *8x* reduction in execution_time between the single thread variant in the _32_ thread variant.
+As can be seen in the image, the addition of even naive application of OpenMP pragmas results in a *8x* reduction in execution_time between the single thread variant in the _32_ thread variant.
 
 Expanding the analysis to the fitness value and speedup, both are shown in @seq-fitness-speedup.
 
@@ -210,7 +209,7 @@ Expanding the analysis to the fitness value and speedup, both are shown in @seq-
 
 
 
-The left image shows that each terrain has a region of fitness and that increasing the number of threads allows the fitness values to fluctuate. However, no significant increase or decreases are noticed.
+The left image shows that each terrain has a region of fitness and that increasing the number of threads allows the fitness values to fluctuate. However, no significant increase or decrease is noticed.
 
 The right chart, showcasing a speedup based on the 1 thread execution time, indicates the successful application of multiple threads to decrease execution time, while not having to fundamentally change the algorithm.
 
@@ -224,7 +223,7 @@ This section will discuss the creation & implementation of the Genetic algorithm
 
 == Genetic Structure <structure>
 
-The genes of the genetic algorithm are structured as `double` value as shown in @gene-structure.
+The genes of the genetic algorithm are structured as `double` value, as shown in @gene-structure.
 
 #figure(
   zebraw(
@@ -239,7 +238,7 @@ The genes of the genetic algorithm are structured as `double` value as shown in 
   caption: [Gene Structure],
 ) <gene-structure>
 
-Each gene will contain one of the axis of a sensors coordinates: $(x,y)$. The gene's (sensor) location are stored in one continues list as shown in illustration @genes-structure.
+Each gene will contain one of the axis of a sensors coordinates: $(x,y)$. The gene's (sensor) location are stored in one continues list, as shown in illustration @genes-structure.
 
 #figure(
   image("assets/images/par/GPUC-Genes.pdf", width: 80%),
@@ -247,7 +246,7 @@ Each gene will contain one of the axis of a sensors coordinates: $(x,y)$. The ge
 ) <genes-structure>
 
 
-Continuing on from the genes, the chromosomes of the algorithm have the following structure as shown in @chromosome-structure.
+Continuing on from the genes, the chromosomes of the algorithm have the following structure, as shown in @chromosome-structure.
 
 #figure(
   zebraw(
@@ -308,7 +307,7 @@ The structure stores the FLIR parameters, terrain parameters, GA parameters (mut
 
 == Kernels Overview <overview>
 
-This subsection will briefly discuss the list of implemented kernels and their purposes before going in depth in the following section.
+This subsection will briefly discuss the list of implemented kernels and their purposes before diving deeper into the following section.
 
 The following is the list of specific kernels:
 - `initBufferKernel`: initializes chromosome values with default values for a population
@@ -361,18 +360,15 @@ Once the buffers have been initialized, the size of the `sharedMemSize` object i
 
 The `d_pop1` kernel is initialized using `initBufferKernel`. For the example parameters, this will result in 3 blocks being launched.
 
-Each island requires a `curand` state. This initialization is handled by the `setupCurand` kernel, in the example, it will launch $5$ blocks.
+Each island requires a `curand` state. This initialization is handled by the `setupCurand` kernel, for the example, $5$ blocks will be launched.
 
 In an attempt at speeding up the execution of the evaluation of the chromosomes, `cudaStream`'s #footnote[https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/asynchronous-execution.html] were used. The number of streams equals the number of islands.
 
-After the setup, the generation loops initiates.
+After the setup, the generation loops initiates. The first step is the `initIslandBufferKernel`, it will initialize each kernel separately in the `d_pop2` population variable. Each separate island may now execute the GA algorithm independently after initialization.
 
-The first step is the `initIslandBufferKernel`, it will initialize each kernel separately in the `d_pop2` population variable. Each separate island may now execute the GA algorithm independently after initialization.
+Before the GA can be executed, the roulette selection must be setup by `buildRouletteKernel`. This is a single block & single thread execution.
 
-Before the GA can be executed, the roulette selection must be setup by `buildRouletteKernel`, this is a single block & single thread execution.
-
-// TODO: Check this again in the code
-Each `gaIsland` kernel will launch 1 block and in total 5 blocks will be executed. Each thread will perform some iterations to select some chromosomes for selection.
+Each `gaIsland` kernel will launch 1 block, and in total 5 blocks will be executed. Each thread will perform some iterations to select some chromosomes for selection.
 
 #set page(columns: 1)
 
@@ -389,7 +385,7 @@ If the `maxFitness` value has not reached the convergence value, the generation 
 
 == Kernels <kernels>
 
-This subsection will discuss some of the kernels more in depth.
+This subsection will discuss some of the kernels in more depth.
 
 
 === `gaIslandKernel`
@@ -398,18 +394,18 @@ Each island is responsible for executing the genetic algorithm in isolation. The
 
 Since each island is constrained to an island, it has to work of the main array of chromosome. Each island has a size based on the number of island and population size (\#chromosomes).
 
-For each island, each thread is responsible for generating several pairs `(x,y)` of offspring, the offspring is selected by calling `rouletteSelect`. The global parent coordinates are found by adding the island offset. Than the `crossOver` step is executed using parent indices, followed by two `mutate` calls on the `buffer` population.
+For each island, each thread is responsible for generating several pairs `(x,y)` of offspring, the offspring is selected by calling `rouletteSelect`. The global parent coordinates are found by adding the island offset. Than, the `crossOver` step is executed using parent indices, followed by two `mutate` calls on the `buffer` population.
 
 
 === `evaluateIsland`
 
 The next step after the GA algorithm has been applied on each respective island in order to check the fitness of each island's chromosomes. For this particular kernel, the number of blocks launched, matches the island size (\#chromosomes).
 
-The first step in the evaluation process, is populating the shared data object.  `extern __shared__ char rawSharedData[]` is populated by a single thread. Once the shared data object is populated, the grid cell loop can start.
+The first step in the evaluation process, is to populate the shared data object.  The object `extern __shared__ char rawSharedData[]` is initialized by a single thread. Once the shared data object has been populated, the grid cell loop can start.
 
 For each cell in the grid ($200 * 200$) `calculateCellPOD` function is called. The function iterates the list of sensors -- calculates the visibility factor between sensor & target coordinates -- applies overlap penalty as needed and returns the combined POD value.
 
-The localPOD is added to a `blockSum` variable indexed by `threadIdx.x`, the array of local POD values is than summed by using parallel reduction on the `blockSum` array.
+The localPOD is added to a `blockSum` variable indexed by `threadIdx.x`. The array of local POD values is than summed by using parallel reduction on the `blockSum` array.
 
 The thread with id 0, will divide the POD by the number of grid cells. The resulting fitness value is written to the `fitnessOut` value, an array of all chromosome fitness values.
 
@@ -423,7 +419,7 @@ The configuration of the migration of chromosomes between the islands can be see
   caption: [Kernel Ring Blocks],
 ) <kernel-ring>
 
-Since each island has a specific size, each is responsible for a corresponding set of chromosomes. By viewing the chromosome list as a ring, that wraps around to the beginning, when the end is reached using `%` operator, migration between islands can be implemented @chengAcceleratingGeneticAlgorithms2019. The migration process is visualized in @migrate-kernel.
+Since each island has a specific size, each is responsible for a corresponding set of chromosomes. By treating the chromosome list as a circular structure, where the last element wraps around to the first using the `%` operator, migration between islands can be implemented @chengAcceleratingGeneticAlgorithms2019. The migration process is visualized in @migrate-kernel.
 
 
 #figure(
@@ -433,13 +429,13 @@ Since each island has a specific size, each is responsible for a corresponding s
 
 The migration step is performed from the point of view from island $k$ and target island $k+1$. Each island has its own offset, respectively identified by `src_offset` and `dst_offset`.
 
-A random `src` index will be found using randomness, accordingly the chromosome with the worst fitness value in target island will be selected. If the fitness value of the `src` is greater than that of `dst`, the `geneIdx` are retrieved and the genes from `src` are copied to `dst`.
+A random `src` index will be found using randomness. Accordingly, the chromosome with the worst fitness value in target island will be selected. If the fitness value of the `src` is greater compared to `dst`, the `geneIdx` are retrieved and the genes from `src` are copied to `dst`.
 
 
 #pagebreak()
 = Analysis <analysis>
 
-This section will analyze the performance of the parallel GA implementation. Once this analysis is performed, an execution time comparison will be done to the sequential version.
+This section will analyze the performance of the parallel GA implementation. Once this analysis is performed, an execution time comparison will be conducted against the sequential version.
 
 == Methodology
 
@@ -449,7 +445,7 @@ For the parallel implementation the timing data collection was made using the `s
 
 Execution timing data for the sequential & parallel version are within guidelines.
 
-Collection metrics for the parallel version regarding bandwidth, etc, was a bit more difficult, due to the number of kernels launched. For this reason the `ncu` #footnote[https://developer.nvidia.com/nsight-compute] CLI was used in combination with `benchkit` #footnote[https://github.com/open-s4c/benchkit]. This made it possible to collect targeted per-kernel metrics by applying predefined profiles to the selected metrics.
+Collection metrics for the parallel version regarding bandwidth, etc, was a bit more complicated, due to the number of kernels launched. For this reason the `ncu` #footnote[https://developer.nvidia.com/nsight-compute] CLI was used in combination with `benchkit` #footnote[https://github.com/open-s4c/benchkit]. This made it possible to collect targeted per-kernel metrics by applying predefined profiles to the selected metrics.
 
 The profiled kernels are the following: `initBufferKernel`, `initIslandBufferKernel`, `gaIslandKernel` and `evaluateIsland`. These kernels are the most involved in the algorithm, based on previous Nvidia Nsight Compute analysis. The collected metrics for each kernel were based on the `detailed` set. Due to how much time each profiling run takes, the number of iterations was reduced compared to the timing dataset. For all parallel benchmarks, the number of threads per block was fixed to *512*.
 
@@ -466,11 +462,11 @@ Let's start by analyzing the execution time and the impact parameters have on th
   caption: [Timing Dataset - Fitness vs Time],
 ) <timing-fitness-vs-time>
 
-The first distinction that becomes clear is that between the terrain types, that the Flanders area has a much higher fitness value. Changing the number of generations, regardless of population does not change the resulting fitness value while increasing the execution time substantially.
+The first distinction that becomes clear is that, between the terrain types, the Flanders area has a much higher fitness value. Changing the number of generations, regardless of population does not change the resulting fitness value while increasing the execution time substantially.
 
 The number of islands has a negligible effect on the execution time for the smallest population of $500$. There is a _very_ small increase in fitness value & execution time when increasing the population size from 5 until 20. For the larger population, the situation is reversed; the highest number of islands (20), gives a slightly higher fitness value with slight reduction in execution time.
 
-The parameter which has the highest impact on fitness & execution time is the number of sensors. This is to be expected, increasing the number of sensors, increases the coverage of the grid and a resulting higher fitness value.
+The parameter which has the highest impact on fitness & execution time is the number of sensors. This is to be expected, increasing the number of sensors, results in an increase of the coverage of the grid and a higher fitness value.
 
 Plotting the execution time in function of algorithm parameters can be found in @timing-time-vs-parameters.
 
@@ -479,7 +475,7 @@ Plotting the execution time in function of algorithm parameters can be found in 
   caption: [Timing Dataset - Time vs Parameters],
 ) <timing-time-vs-parameters>
 
-The same behavior as noted previously, is more defined here. Both the generations & sensors parameters have a negative impact on the execution time. The sensor parameter is only one that results in an increase of the fitness value. For the island parameter, there is a slight increase and downward trend when increasing the number of islands.
+The same behavior, as noted previously, is more defined here. Both the generations & sensors parameters have a negative impact on the execution time. The sensor parameter is the only one that results in an increase of the fitness value. For the island parameter, there is a slight increase and downward trend when increasing the number of islands.
 
 In addition, a test was carried out, to check if increasing the population size to a much larger value, beyond 1000 would have any impact, regardless of previous behavior discussed. The analysis of this can be found in @big-pop-population-vs-fitness. The population was varied with following fixed values: sensors: $100$; generations: $50$; islands: $10$.
 
@@ -488,11 +484,11 @@ In addition, a test was carried out, to check if increasing the population size 
   caption: [Large Population Dataset - Population Size vs Fitness],
 ) <big-pop-population-vs-fitness>
 
-The charts make it conclusive; increasing the population size beyond $1000$, does not have any effect on an increasing fitness value. The chart does again show the plain distinciton in fitness value between the ardennes & flanders region.
+The charts make it conclusive; increasing the population size beyond $1000$ does not have any effect on an increasing fitness value. The chart does again show the plain distinciton in fitness value between The Ardennes & Flanders region.
 
 === Conclusion
 
-Definitive conclusions regrading this behavior require the more detailed analysis provided in section @profiling. However, initial assessment suggest that the GA algorithm is already well optimized for the problem space.
+Definitive conclusions regrading this behavior require the more detailed analysis provided in @profiling. However, initial assessment suggests that the GA algorithm is already well optimized for the problem space.
 
 
 == Profiling  <profiling>
@@ -513,14 +509,14 @@ To start, the execution time for each kernel vs \#islands is shown in @profiling
 
 From the outset, it is immediately clear that the major bottleneck is the `evaluateIsland` kernel. For this reason, the major focus will be on the kernels: `gaIsland` and `evaluateIsland`.
 
-Each kernel's primary computation throughput is shown in &@gflops-vs-islands.
+Each kernel's primary computation throughput is shown in @gflops-vs-islands.
 
 #figure(
   image("assets/charts/par/profiling/gflops_vs_islands.pdf"),
   caption: [GFLOPs vs Islands],
 ) <gflops-vs-islands>
 
-Both kernels are dominant in their respective operation type -- the `gaIslandKernel` is dominantly single precision point heavy -- while the `evaluateIsland` is dominated by double precision operations. In both kernels, it is clear that the throughput declines when increasing the number if islands. Before making any conclusion, the bandwidth per kernel must be analyzed, it could be that the kernels are memory bound.
+Both kernels are dominant in their respective operation type -- the `gaIslandKernel` is dominantly single precision point heavy -- while the `evaluateIsland` is dominated by double precision operations. In both kernels, it is clear that the throughput declines when increasing the number of islands. Before making any conclusion, the bandwidth per kernel must be analyzed, it could be that the kernels are memory bound.
 
 To evaluate whether the kernels are memory- or compute-bound, the Roofline model was employed. The respective Roofline analyses for both FP32 and FP64 precision variants are presented in @roofline-fp32-ardennes and @roofline-fp64-ardennes.
 
@@ -543,7 +539,7 @@ To evaluate whether the kernels are memory- or compute-bound, the Roofline model
   ],
 )
 
-Based on both respective models, it can be concluded that neither kernel are neither compute or memory bound. Before making a final determination, the warp occupancy percentage for both kernels is shown in @sm-warp-ardennes.
+Based on both respective models, it can be concluded that neither kernel is either compute or memory bound. Before making a final determination, the warp occupancy percentage for both kernels is shown in @sm-warp-ardennes.
 
 #figure(
   image("assets/charts/par/profiling/warp_occupancy_vs_islands.pdf"),
@@ -552,9 +548,9 @@ Based on both respective models, it can be concluded that neither kernel are nei
 <sm-warp-ardennes>
 
 
-The charts in @sm-warp-ardennes, showcase the warp occupancy of all the $46$ SM on the RTX 3070 in percentage. For the `gaIslandKernel` is shows that increasing the island increases the occupancy of and thus better utilization of available resources.
+The charts in @sm-warp-ardennes, showcase the warp occupancy of all the $46$ SM on the RTX 3070 in percentage. For the `gaIslandKernel`, it shows that increasing the number of island increases the occupancy of warp's and leads to better utilization of available resources.
 
-For the `evaluateIsland` it is a different story, there increasing the number of islands shows a decrease in in warp occupancy. The average occupancy level of the `evaluateIsland` is higher than compared to the other kernel.
+For the `evaluateIsland` it is a different story, increasing the number of islands shows a decrease in warp occupancy. The average occupancy level of the `evaluateIsland` is higher compared to the other kernel.
 
 
 == Vs Sequential <vs-seq>
@@ -566,20 +562,20 @@ A comparison of the execution time & speedup between the sequential & parallel v
   caption: [Sequential vs Parallel],
 ) <seq-vs-par-time>
 
-The left chart in image @seq-vs-par-time shows the execution time of both versions, and the speedup on right chart in the image. The speedup chart shows that, the naive application of OpenMP library on the sequential version  delivers an impressive speedup between the 32 thread version and single thread version, the GPU based algorithm is substantially faster compared to the single threaded version. Proving the usage and implementation of GA algorithm on GPU based devices has clear benefit.
+The left chart in image @seq-vs-par-time displays the execution time of both versions, while the right chart shows the speedup. The speedup chart shows that, the naive application of OpenMP library on the sequential version  delivers an impressive speedup between the 32 thread version and single thread version. The GPU based algorithm is substantially faster compared to the single threaded version. Proving the usage and implementation of GA algorithm on GPU based devices has clear benefit.
 
 
 = Conclusion
 
-To summarize the points, both terrain have distinctive fitness values which are expected based on the terrain features. There is no difference in execution time for the terrains. The only factor impacting the fitness value is the \#sensors which is reasonable, but no impact of other parameters requires further reasoning.
+To summarize, both terrain exhibit distinctive fitness values which are expected based on the terrain features. No significant difference in execution time was observed between the terrains. The only factor impacting the fitness value is the \#sensors which is reasonable. However, the lack of impact from the other parameters requires further investigation.
 
-The throughput & bandwidth based kernels, indicate that there is room for improvement on the GPU GA implementation. But, as the analysis in @vs-seq shows, even an not that well optimized GPU implementation achieves a significant speedup compared to a single threaded sequential version and 32 threaded sequential implementation.
+The throughput & bandwidth based kernels indicate that there is room for improvement on the GPU GA implementation. Nevertheless, as the analysis in @vs-seq shows, even a relatively unoptimized GPU implementation achieves a significant speedup compared to both the single threaded and 32 threaded implementation.
 
-The reduction in performance, when increasing the number of islands could possible be explained by the recreation of the `rawSharedData` value in each island in the `evaluateIsland` function. Future optimization should look in to making this shared between all islands.
+The reduction in performance observed, when increasing the number of islands could possible be explained by the recreation of the `rawSharedData` value for each island in the `evaluateIsland` function. Future optimizations should look in to making this shared between all islands.
 
-The `evaluateIsland` maintains the dominant kernel, even after switching to an island based GA algorithm. Future optimization's should target this kernel and maybe looking at moving from FP64 operations to FP32, due note that the current FP64 peak has not been reached yet.
+The `evaluateIsland` function remains the dominant kernel, even after transitioning to an island-based genetic algorithm (GA). Consequently, future optimization efforts should target this kernel. Transitioning from 64-bit floating-point (FP64) to 32-bit floating-point (FP32) operations represents a potential avenue for improvement, though it is worth noting that the current FP64 peak performance has not yet been reached.
 
-Overall, the attempt could be considered a success with better improvement's & efficiency available for the parallel algorithm.
+Overall, the implementation was successful, and the parallel algorithm offers significant potential for further enhancements in efficiency.
 
 
 #pagebreak()
