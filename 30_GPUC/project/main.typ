@@ -50,23 +50,23 @@
 
 This report presents "Project: Genetic Algorithm" assignment for the GPU Computing course. It begins by establishing the context of applying a Genetic Algorithm to the specific problem space in @context. @pipeline then outlines the data preparation pipeline and provides further details on the problem itself.
 
-Following, the updated sequential implementation and initial naive speedup methods are detailed @sequential. Finally, the report focuses on the parallel implementation discussed in @parallel — before concluding with a comparative performance analysis of both versions in @analysis.
+Following, the updated sequential implementation and initial naive speedup methods are detailed in @sequential. Finally, the report focuses on the parallel implementation discussed in @parallel — before concluding with a comparative performance analysis of both versions in @analysis.
 
 
-// FIXME: Make sure this is present in the final version
-// == Declaration of AI Usage
+FIXME: Make sure this is present in the final version
+== Declaration of AI Usage
 
-// For starting the project and the start up phases AI was used. The repository for preprocessing the DEM data can be found here @dem_preprocessing. As a starting point, the following repository was used for both the sequential & parallel version of the algorithm: @cuda_starting_point. The initial repository was updated to reflect the modern features, such as the deprecated `rand()` function and more. After the code was updated, some AI help was used to think through the genetic algorithm structures.
+For starting the project and the start up phases AI was used. The repository for preprocessing the DEM data can be found here @dem_preprocessing. As a starting point, the following repository was used for both the sequential & parallel version of the algorithm: @cuda_starting_point. The initial repository was updated to reflect the modern features, such as the deprecated `rand()` function and more. After the code was updated, some AI help was used to think through the genetic algorithm structures.
 
 
 // #pagebreak()
 = Context <context>
 
-The problem addressed by this genetic algorithm is a well-known challenge in wireless networking: optimizing service tower placement to maximize coverage while accounting for terrain variations @yoonEfficientGeneticAlgorithm2013b. Specifically, wireless internet providers must strategically position their infrastructure to ensure optimal signal distribution across complex geographic landscapes.
+The problem addressed by this genetic algorithm is a well-known challenge in wireless networking: optimizing service tower placement to maximize coverage, while accounting for terrain variations @yoonEfficientGeneticAlgorithm2013b. Specifically, wireless internet providers must strategically position their infrastructure to ensure optimal signal distribution across complex geographic landscapes.
 
 An identical problem arises within the military domain, where a limited set of sensors must be strategically deployed to maximize total coverage or detection probability @ridderMissionPlanningJoint2005.
 
-For these very reasons, there have been historically been several attempts with success in applying Genetic Algorithms to solve this particular problem @dhillonSensorPlacementEffective.
+For these very reasons, there have been historically been several successful attempts in applying Genetic Algorithms to solve this particular problem @dhillonSensorPlacementEffective.
 
 A notable variation of this problem involves the deployment of two distinct sensor types, Forward-Looking Infrared (FLIR) and seismic, across hilly terrain to detect approaching military vehicles @seoEfficientLargeScaleSensor2016. In this scenario, the algorithm is utilized to optimize the placement strategy for both sensor types.
 
@@ -77,7 +77,7 @@ Consequently, this paper implements a scoped-down version of the genetic algorit
 #pagebreak()
 = Pipeline & Genetic Algorithm <pipeline>
 
-This section will discuss the pipeline of preparing and retrieving required DEM (Digital Elevation Model) data and the outputs the python preprocessing scripts generated for use in the genetic algorithm.
+This section will discuss the pipeline of preparing and retrieving required DEM (Digital Elevation Model) data, and the outputs the python preprocessing scripts generated for use in the genetic algorithm.
 
 == Overview
 
@@ -88,17 +88,17 @@ The complete pipeline can be viewed in @pipeline-overview.
   caption: [Pipeline Overview],
 ) <pipeline-overview>
 
-The process starts with downloading the DEM data from a public source. Once the data is downloaded, the preprocessing step, based on the specified range, generates a Viewshed LUT (Look-Up-Table), Terrain Map and other `*.tiff` files. The viewshed LUT, is a 4D array: `viewshed[sx][sy][tx][ty]`, consisting of ones and zero, based on if source & target can see each other. The terrain map, is a 2D array which includes the elevation of the particular cell in question.
+The process starts with downloading the DEM data from a public source. Once the data is downloaded, the preprocessing step, based on the specified range, generates a Viewshed LUT (Look-Up-Table), Terrain Map and other `*.tiff` files. The viewshed LUT, is a 4D array: `viewshed[sx][sy][tx][ty]`, consisting of ones and zeros, based on if source & target can see each other. The terrain map, is a 2D array which includes the elevation of the particular cell in question.
 
-After the viewshed & terrain files are generated, the genetic algorithm is executed with those files as input. The GA takes input parameters and computes a result based on input parameters. The Ga generates a `sensors.csv` file, which contains the sensors positions based on grid coordinates.
+After the viewshed & terrain files are generated, the genetic algorithm is executed with those files as input. Based on the provided parameters, the GA computes an optimal solution and generates a `sensor.csv` file. The file, containing sensor position based on grid coordinates.
 
-The `*.tiff` files are created for visualization reasons and can later be imported into QGIS #footnote[https://qgis.org]. The generated `sensors.csv` file is later converted into GEO spatial coordinates file called: `geo_sensors.csv` using `convert_sensors.py`, which can also be imported into QGIS.
+The `*.tiff` files are created for visualization purposes and can be imported into QGIS #footnote[https://qgis.org]. The generated `sensors.csv` file can subsequently be converted for further analysis into GEO spatial coordinates file called: `geo_sensors.csv` using `convert_sensors.py`, which can be imported into QGIS.
 
 == DEM
 
-The genetic algorithm itself requires appropriate terrain data for a more realistic scenario. This type of data can be downloaded from public sources easily. Therefore, the data for the country of Belgium was used. In this case, the source of the data came from OpenTopography.org #footnote[https://portal.opentopography.org/raster?opentopoID=OTSDEM.032021.4326.2] and was downloaded on 8 April 2026.
+The genetic algorithm itself requires appropriate terrain data for a more realistic scenario. This type of data can be easily downloaded from public sources. Therefore, the data for the country of Belgium was used. In this case, the source of the data were obtained from OpenTopography.org #footnote[https://portal.opentopography.org/raster?opentopoID=OTSDEM.032021.4326.2] and was downloaded on 8 April 2026.
 
-The two areas chosen as a comparison of the GA between flat terrain and a bit more hilly terrain can be seen in @ardennes-area & @flanders-area.
+The two areas selected as a comparison of the GA between flat terrain and a bit more hilly terrain can be seen in @ardennes-area & @flanders-area.
 
 #grid(
   columns: (1fr, 1fr),
@@ -106,7 +106,7 @@ The two areas chosen as a comparison of the GA between flat terrain and a bit mo
   [
     #figure(
       image("assets/images/context/Ardennes.pdf"),
-      caption: [The Ardennes Geolocation Area],
+      caption: [Ardennes Geolocation Area],
     ) <ardennes-area>
   ],
   [
@@ -118,16 +118,16 @@ The two areas chosen as a comparison of the GA between flat terrain and a bit mo
 )
 
 The coordinates of both areas are the following: (Gdal format):
-- The Ardennes: $5.4, 49.8, 5.540, 49.890$
+- Ardennes: $5.4, 49.8, 5.540, 49.890$
 - Flanders: $2.58, 51.00, 2.72, 51.09$
 
 == Preprocessing
 
-After the DEM data is available, the preprocessing step using `python` may begin. For this type of data & problem, there is a library available which does the heavy preprocessing lifting that is required, called: `gdal` @gdal_library.
+Once the DEM data is available, the preprocessing step using `python` may begin. For this type of data & problem, there is a library available that handles the heavy preprocessing lifting that is required, called: `gdal` @gdal_library.
 
 The repository, which includes the preprocessing files, can be found at @dem_preprocessing. A short description and workings of the preprocessing will be made here. The repository consists of the following files: `preprocess_dem.py`, `preprocess_viewshed.py`, `convert_sensors.py`, `check_sizes.py`, `check_visbility.py`.
 
-The `preprocess_dem.py` is responsible for converting a given square area based on ROI (Gdal coordinates) into a binary file containing area elevation data. The script creates several output files, the 2 files important for the GA are: `elevation.bin` and `elevation_meta.txt`. The remaining output files where used to verify the GA algorithm in QGIS as shown in @ardennes-area, @flanders-area.
+The `preprocess_dem.py` is responsible for converting a given square area based on ROI (Gdal coordinates) into a binary file containing area elevation data. The script creates several output files, the 2 most important files for the GA are: `elevation.bin` and `elevation_meta.txt`. The remaining output files were used to verify the GA algorithm in QGIS, as shown in @ardennes-area, @flanders-area.
 
 #pagebreak()
 #grid(
@@ -148,11 +148,11 @@ The `preprocess_dem.py` is responsible for converting a given square area based 
 )
 
 
-The viewshed is generated by `preprocess_viewshed.py` file. It uses the `gdal.ViewshedGenerate` function to calculate the visibility of a source sensor 1.8m high and 0m (on the ground). Depending on the problem, these parameters can be tuned. This script creates several files, two files are used as input for the GA: `viewshed_lut.bin` and `viewshed_meta.txt`.
+The viewshed is generated by the `preprocess_viewshed.py` file. It uses the `gdal.ViewshedGenerate` function to calculate the visibility of a source sensor 1.8m high and target 0m high (on the ground). Depending on the problem, these parameters can be tuned. This script creates several files, two files are used as input for the GA: `viewshed_lut.bin` and `viewshed_meta.txt`.
 
-There are two verification files included: `check_sizes.py` is the first one: checks the size of each cell depending on the size of the area and the number of cells of the grid. The second one: `check_visibility.py` uses Gdal functions to check the general visibility of the area by reading in the `viewshed_lut.bin` file.
+There are two verification files included: the first one is `check_sizes.py`: which checks the size of each cell depending on the size of the area and the number of cells of the grid. The second one: `check_visibility.py` uses Gdal functions to check the general visibility of the area by reading in the `viewshed_lut.bin` file.
 
-Closing the list of scripts: `convert_sensors.py` is responsible for converting the `*-sensors.csv` file generated by the GA algorithm from the coordinates on the GRID to GEO based coordinates for import and visualization in QGIS.
+To complete the list of scripts: `convert_sensors.py` is responsible for converting the `*-sensors.csv` file generated by the GA algorithm from grid based coordinates to GEO based coordinates for import and visualization in QGIS.
 
 
 #pagebreak()
