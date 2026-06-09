@@ -333,14 +333,249 @@ Families
 
 == History and affordances of pen and paper
 
+Cave paintings, stylus, progressing further, until modern ballpoint pens and than electronic pens.
+
+And for paper; clax and wax tablets; papyrus; parchment and than paper.
+
+
+- Coevolution of paper and work practices
+- Everybody know how to use pen and paper (expecations)
+
+#linebreak()
+
+Myth of Paperless office, never came to be.
+
+#linebreak()
+
+Affordances of Pen and paper
+
+Affordance: how to use an object
+
+Paper
+- light
+- flexible
+- navigation
+  - flipping across Documents
+- ...
+
+Paper supports some forms of collaboration and interaction that are difficult to mimic in digital space.
+
+Pen
+- robust
+- light
+- ...
+
+
+Example: Ikea BookBook
+
+#linebreak()
+
+Replacing pen and Paper? Handwriting is still the best, etc (study)
+
 
 
 == Digital pen and paper solutions
+
+Bridging paper-digital divide => integration
+
+#image("assets/pdi.png")
+
+Examples
+- telautograph
+- memex
+  - uses pen for reference & notes
+- stylator and RAND tablet
+- Sketchpad (1963)
+- Light Pen
+- Graphics Tablet (modern)
+- Ultrasonic Position Detection Pen (clipon)
+- Digital Desk (old/history)
+
+#linebreak()
+
+Digital Pen & Paper
+- Anoto
+  - camera / grid
+- NeoLab
 
 
 
 == iPaper research
 
+- Link metamodel (RSL)
+- Tools
+- Cross-Media Server / Publishing
+- Applications
+
+Cross-media; interactive document has information stored on server, position on paper links to active page areas and layers (can be image/ video clip / etc)
+
+Link metamodel (RSL); consisting of links, users, layers, plug-ins and active components.
+
+PaperPoint Presentation Tool, control using actions on paper, detected using pen's.
+
+Input device independence
+
+#linebreak()
+
+Digital Pen and Paper Applications
+- Enhanced Reading
+- Ehhanced writing
+- Paper-based interfaces
+- Art Installations
+- Interactive tabletops
+
+#linebreak()
+
+Examples (cross-media):
+- Edfest user trials
+- Natural History Museum
+
 
 
 == Innovative hardware and materials
+
+- mobile solutions
+- fusion of electronic paper and interactive paper
+- HoloLens & HoloDoc (feedback)
+
+
+
+#pagebreak()
+= Chapter 5: Interactive Tabletops and Surfaces
+
+
+== Multi-user tabletop interfaces
+
+Multi-user, each users has it's own type of zone. Personal space zone, group space, store zone, etc.
+- personal territories
+- group territories
+- storage territories
+
+Ergonomic issues, not as-all purpose computing more for dedicated tasks.
+
+
+== Enabling technologies and frameworks
+
+Basic components
+- touch sensor
+- display
+- software
+
+
+Display technologies
+- resistive touch panels
+- surface capacitive touch panels
+- projected capacitive touch panels
+- surface acoustic wave (SAW)
+- frustrated total internal reflection (FTIR)
+- diffused illumination (DI)
+
+
+== Applications
+
+- digital desk
+- diamond touch table
+- Jeff Han's multi-touch table
+- Benddesk
+- Microsoft PixelSense
+- ReacTIVISion
+- iTtable Interactive Tabletop
+- weInspire Room
+- HP Sprout Pro
+- Microsoft Surface Studio 2
+
+- Oled panels
+- Windowless plane
+
+
+
+#pagebreak()
+= Chapter 6: Gesture-based interaction
+
+== What is a gesture?
+
+- motion of the limbs or body to express
+- expression of thought or emphasis
+- succesion of postures
+
+Formal: non-verbal comunication; visible bodily actions; particular message(s). (...) movement of the hands, face, or other parts of the body.
+
+
+== Gesture Types
+
+- semiotic gestures
+- ergotic gestures
+- epistemic gestures
+
+
+semiotic gestures
+- symbolic (emblems, ...)
+- deictic (pointing, ...)
+- iconic (size, shape, ...)
+- pantomimic gesutres (movement, ...)
+
+
+
+== Gesture recognition devices
+
+- wired gloves
+- Accelerometers
+- Camcorders and webcams
+- Skeleton tracking
+- Electromyography (EMG)
+- Single and multi-touch surfaces
+- see lecture on Interactive Tabletops and Surfaces
+- Digital pens
+
+
+== Gesture design guidelines
+
+Gesture vocabularies, common pitfalls:
+- hard to perform
+- hard to remember
+- feel fatigue
+
+Observe the user & evaluated against criteria.
+
+
+
+== Gesture spotting and recognition solutions
+
+We introduced a new gesture spotting approach based on a human-readable representation of automatically inferred spatio-temporal constraints.
+
+Recognition algorithms
+- template-based
+- machine learning-based
+- rule-based
+
+Pen-based
+- offline
+- online
+- methods: ...
+
+
+
+== Paper
+
+See paper in question.
+
+
+
+#pagebreak()
+= Chapter 7: Tangible, Embedded and Embodied Interaction
+
+== History of graspable and tangible user interfaces
+
+
+== Applications
+
+
+== Tangible bits and radical atoms
+
+
+== Tangible Holograms (TangHo)
+
+
+== Paper
+
+See paper in question.
