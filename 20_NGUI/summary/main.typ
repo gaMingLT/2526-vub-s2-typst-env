@@ -564,18 +564,361 @@ See paper in question.
 #pagebreak()
 = Chapter 7: Tangible, Embedded and Embodied Interaction
 
+
 == History of graspable and tangible user interfaces
+
+Marble Answering Machine
+- incomming messages by physical marbles
+- aesthetically pleasing and enjoyable to use
+- one-step actions
+- multi-use usage might be a bit difficult, know where a product is used
+
+#linebreak()
+
+Graspable User interfaces
+- Physical handles (bricks)
+- Brick tightly coupled to a virtual object
+- Large horizontal display surface: 'ActiveDesk'
+
+Advantages:
+- two-handed interactions
+- parallel-input
+- affordances of artefacts
+- multi-person
+- foundations o tangible interaction
+
+
+#linebreak()
+
+Affordances
+- originally: 'all possible actions with an object'
+- refined:
+  - 'possible actions that can be recognised'
+  - 'how to use the object'
+
+
+Example: The Norman Door
+
+Definition of Tangible Interfaction, umbrella term for:
+- graspable user interfaces
+- tangible user interfaces
+- embodied interaction
+
 
 
 == Applications
 
+- Lifewire (1995)
+- metaDESK
+- ambientROOM
+- Urp
+- ReacTIVISion
+- The Sand Noise Music Device
+- ArtVis
+- Sifteo Cubes (Siftables)
+- ZeroN
+- TRANSFORM
+
 
 == Tangible bits and radical atoms
 
+Tangible Bits (1997)
+- Beyond GUIs - Tangible User Interfaces (TUIs) augment the physical space by coupling digital information to everyday objects and environments.
+
+#linebreak()
+
+Radical Atoms (2012)
+- leap beyond Tangible Bits
+- bidirectionally coupled
+- human-material interaction
+- Material User Interface (MUI)
+
+Concept
+- Transform: 'shape'
+- Conform: 'physical laws'
+- Inform: 'inform user'
+
+Interactions with Radical Atoms
+- direct touch and gestural interaction
+- context-aware transformation
+- shape-memory clay: *Perfect Red*
+
+#linebreak()
+
+Vision-Driven Design Research
+- strong vision can last beyond our lifespan
+- have to wait for enabling technologies but exploration of interaction design can already start
+
+
 
 == Tangible Holograms (TangHo)
+
+Data Physicalisation: (how) dynamic data Physicalisation with dynamic affordances? -> tangible holograms.
+
+#image("assets/tangho.png")
 
 
 == Paper
 
 See paper in question.
+
+
+
+
+#pagebreak()
+= Chapter 8: Virtual and Augmented Reality
+
+
+== Definition
+
+#image("assets/mixed.png")
+
+- Reaility-Virtuality continumm
+- Merging
+  - physical and digital object co-exist
+  - mixed reaility
+  - augmented reality and augmented virtuality
+
+#linebreak()
+
+Virtual Reality (VR) is an artificial environment which is experienced through sensory stimuli (e.g.sight or sound) provided by a computer and in which a user's actions partially determine what happens in the environment.
+
+main issues
+- create acceptable substitutes for real world objects or environments
+- sense
+- navigate
+- interact
+
+First VR: The Sword of Damocles
+
+#linebreak()
+
+Applications
+- architecture
+- education
+- medicine
+- engineering
+- military
+- entertainment
+
+#linebreak()
+
+Perceptual immersion (physical immersion or sensory
+immersion) is about the perception of being physically present in a non-physical virtual environment which is created by surrounding images, sound or other stimuli by the VR system.
+
+#linebreak()
+
+Non-immersive virtual environments show a real-time 3D environment on a desktop screen.
+- "desktop virtual reality"
+
+== Technologies
+
+#grid(
+  columns: (1fr, 1fr),
+  rows: (auto, auto),
+  column-gutter: 5pt,
+  row-gutter: 10pt,
+  [
+    #image("assets/screens.png")
+
+    Large Screens
+  ],
+  [
+    #image("assets/boom.png")
+
+    Binocular Omni-Orientation Monitor (BOOM)
+  ],
+
+  [
+    #image("assets/cave.png")
+
+    Cave Automatic Virtual Environment (CAVE)
+  ],
+  [
+    #image("assets/hmd.png")
+
+    Head-mounted Display (HMD)
+  ],
+)
+
+
+
+== VR Navigation and Interaction Techniques
+
+- computed generated scenes (...) navigate and interact
+
+*Navigation* is the ability to move around and explore the features of the virtual environment (3D scene).
+
+*Interaction* involves the selection and moving of objects in a scene.
+
+#linebreak()
+
+- grabbing in the air
+- lean-based velocity
+- path drawing
+- walking in place
+
+
+Example: Disney HoloTile Treadmill
+
+#linebreak()
+
+Two types
+- non-immersive interaction
+- immersive interaction
+
+Interaction Techniques
+- virtual hand
+- ray casting
+- image plane
+
+Example: Haptic PIVOT
+
+
+== Augmented Reality Techniques
+
+Augmented Reality (AR) is a variation of Virtual
+Environments (VE), (..). (...) allows the user to see the real world, (...) virtual objects superimposed upon or composited with the real world. (...) suplements reality, rather than completely replacing it. (...) virtual and real objects coexisted (...).
+
+#grid(
+  columns: (1fr, 1fr),
+  rows: (auto, auto, auto),
+  column-gutter: 5pt,
+  row-gutter: 10pt,
+  [
+    #image("assets/video.png")
+
+
+    Video Compositing
+  ],
+  [
+    #image("assets/hud.png")
+
+    Head-up displays
+  ],
+
+  [
+    #image("assets/direct.png")
+
+    Direct Projection
+    - SixthSense
+  ],
+  [
+
+    #image("assets/wikitude.png")
+
+
+    Magic lens metaphor
+    - Wikitude World Browser
+  ],
+
+  [
+    #image("assets/mirror.png")
+
+    Magic mirror metaphor
+  ],
+  [
+    #image("assets/eyeglass.png")
+
+    Magic Eyeglass metaphor
+  ],
+)
+
+- Optical see-through HMDs
+- Video see-through HMDs
+- Virtual Retinal Displays (VRD)
+- Google Glass
+- Microsoft HoloLens 2
+- Dynamic 365 Remote Assistant
+- Computing Glasses
+
+== Applications
+
+- Maintenance
+- Architecture
+- Education
+- Medicine
+- (...)
+
+
+
+#pagebreak()
+= Chapter 9: Data Physicalisation
+
+== Advantages
+
+== Enabling Technologies
+
+
+== Examples
+
+
+== Research Challenges
+
+
+== Dynamic Data Physicalisation Framework
+
+
+
+#pagebreak()
+= Chapter 10: Implicit Human-Computer Interaction
+
+
+== Context
+
+
+== Intelligibility
+
+
+== Affective Computing
+
+
+
+== Emotion Classification Models
+
+
+
+== Emotion Recognition Modalities
+
+
+
+#pagebreak()
+= Chapter 11: Human-AI Interaction
+
+== Challenges
+
+== Guidelines
+
+
+== Human-centered artificial intelligence (HCAI)
+
+
+== HCAI Framework
+
+
+== Prometheus Design principles
+
+
+
+#pagebreak()
+= Chapter 12: Case Studies and Future Research
+
+
+== Applications
+
+*TODO*
+
+
+== Role of Visions in HCI Research
+
+Think of interactions and designs that one would normally think about and thinking further that what is available and letting creativity go 'wild'.
+
+
+== Future of work and workers
+
+*TODO*
+
+
+== Human-AI Collaboration
+
+Instead of interialy realying on AI, using AI in a such a way to critically think of the text is to be read and use that for critical thinking.
