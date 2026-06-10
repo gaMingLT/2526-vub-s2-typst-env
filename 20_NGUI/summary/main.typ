@@ -845,18 +845,76 @@ Environments (VE), (..). (...) allows the user to see the real world, (...) virt
 #pagebreak()
 = Chapter 9: Data Physicalisation
 
+“A *data physicalization* (or simply physicalization) is a
+physical artifact whose geometry or material properties
+encode data.”
+
+*Physical visualisation* sometimes used as a synonym for
+data physicalisations.
+
+*Data sculptures* refer to artistic data physicalisations.
+
+
 == Advantages
 
+- tactile exploration
+- active participation and engagement
+- accesibility
+- efficiency
+  - physical 3D bar charts > 3D bar charts
+
+
 == Enabling Technologies
+
+- digital fabrication technologies
+  - 3D printers
+- actuated tangible interfaces
+  - physical objects changing their form, (...)
+- shaped-changing displays
+- olfactory output devices
 
 
 == Examples
 
+- EMERGE
+- inFORM / TRANSFORM
+- Braille Smartwatch
+- Dot Pad Tactile Display
+- Mid-air Data Physicalisation
+- Taste the TV (TTTV)
+- 3D Printed Food
+- Olfactory Interfaces
+- Weart TouchDIVEr Haptic Glove
+- Dynamic Composite DataPhys
+- Sensor Bricks
+
 
 == Research Challenges
 
+- need new form of dynamic data physicalisation
+- physicalisation guidelines
+- conceptual data physicalisation framework
+- need for data physicalisation software frameworks
+- interaction design guidelines
+
+
+How can we achieve *dynamic data perceptualisation with dynamic affordances*
+- physical variables
+  - tempurate
+- exploration of big data sets
+- tangible holograms
+
 
 == Dynamic Data Physicalisation Framework
+
+- data perceptualisation design guidelines
+- modular and extensible hardware platform
+
+#image("assets/ddpf.png")
+
+- dataper framework
+- dataphys grammar
+- design and interaction guidelines
 
 
 
@@ -865,6 +923,8 @@ Environments (VE), (..). (...) allows the user to see the real world, (...) virt
 
 
 == Context
+
+
 
 
 == Intelligibility
