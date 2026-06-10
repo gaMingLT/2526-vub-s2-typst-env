@@ -921,42 +921,177 @@ How can we achieve *dynamic data perceptualisation with dynamic affordances*
 #pagebreak()
 = Chapter 10: Implicit Human-Computer Interaction
 
+In Implicit Human-Computer Interaction (iHCI), we try to
+use contextual factors (e.g. various sensor input) to build human-centred anticipatory user interfaces based on naturally occurring human interactive behaviour.
+
+*Context-aware computing* can be used to design implicit
+human-computer interaction.
+
 
 == Context
 
+Context is any information that can be used to characterize the situation of an entity. (...)
 
+- Example: Car Navigation
+
+Factors
+- human
+- physical
+
+Sensor Input to Context
+- how do we compute the perceived context (...)?
+- model context?
+- trigger implicity interactions?
+- author new context elements?
+
+=> User-Context Perception Model (UCPM)
+
+The quality of implicit human-computer interaction as
+perceived by the user is directly _related to the awareness mismatch_.
+- solution: keep the user in the loop
 
 
 == Intelligibility
+
+- What: What did the system do?
+- Why: Why did the system do X?
+- Why Not: Why did the system not do X?
+- What If: What would the system do if Y happens? (feedforward)
+- How To: How can I get the system to do Z, given the current context?
+
+Explanation (...) demand only!
+
+
+Guidelines for implicit HCI
+- context => make things easier
+- feature of space + factors => influence
+- try to minimise awareness mismatch
+  - increase Intelligibility
+
 
 
 == Affective Computing
 
 
+Computing that takes into account the recognition, interpretation, modelling, processing and synthesis of human affects (emotions).
+
+#linebreak()
+
+Emotions are episodes of coordinated changes in several
+components (neurophysiological activation, motor expression, subjective feelings, action tendencies and cognitive processes) in response to external or internal events of major significance to the organism.
+
 
 == Emotion Classification Models
 
+*Discrete models* treat emotions as discrete and different constructs
+- Ekman's model
+
+*Dimensional models* characterise emotions via dimensional values
+- Russel's model
+- Plutchik's model
+- PAD emotional state model
+
+#linebreak()
+
+Ekman's model, 6 basic facial emotions
+- anger, fear, disgust
+- surprise, happiness, sadness
+
+#linebreak()
+
+Russell's Circumplex Model of Affect:
+- Emotions are mapped to two dimensions
+  - valence (x-axis)
+  - arousal (y-axis)
+
+#linebreak()
+
+Pluchik's Wheel of Emotions
+- 8 basic
+  - joy vs.sadness
+  - trust vs.disgust
+  - fear vs.anger
+  - surprise vs. anticipation
+
+- 8 advanced
+  - awe (fear + surprise)
+  - disapproval (surprise + sadness)
+  - remorse (sadness + disgust)
+  - contempt (disgust + anger)
+  - aggressiveness (anger + anticipation)
+
+
+#linebreak()
+
+PAD Emotional State Model, 3 numerical dimensions
+- pleasure-displeasure
+- arousal-nonarousal
+- dominance-submissiveness
+
+=> Self-Assessment Manikin (SAM) is a language neutral form that can be used to assess the PAD values.
 
 
 == Emotion Recognition Modalities
+
+Emotions can be manifested via different modalities
+- acoustic features (voice pitch, intonation, etc.)
+- verbal content (speech)
+- visual facial features
+- body pose and gestures
+- biosignals (physiological monitoring)
+  - pulse, heart rate, …
+
+=> Potential multimodal fusion of multiple modalities.
 
 
 
 #pagebreak()
 = Chapter 11: Human-AI Interaction
 
+New technologies and applications that use AI to
+augment and enhance human capabilities.
+
+
 == Challenges
 
+- Transparency
+- Explainability (intelligibility)
+- Responsiveness
+- Adaptivity
+- Privacy and security
+- Data quality
+- Bias and ethics
+- AI systems that are fair, accountable and respectful
+
+
 == Guidelines
+
+#image("assets/guidelines.png")
 
 
 == Human-centered artificial intelligence (HCAI)
 
+Many designs still based on a one-dimensional model of
+automation (more automation means less user control).
+
 
 == HCAI Framework
 
+Human-Centred Artificial Intelligence (HCAI) framework introduces a two-dimensional space
+- possible to achieve high levels of human control *and* high levels of computer automation
+
+#image("assets/hcai.png")
+
 
 == Prometheus Design principles
+
+- Consistent interfaces to allow users to form, express and revise intent
+- Continuous visual display of the objects and actions of interest
+- Rapid, incremental and reversible actions
+- Error prevention
+- Informative feedback to acknowledge each user action
+- Progress indicators to show status
+- Completion reports to confirm accomplishment
 
 
 
